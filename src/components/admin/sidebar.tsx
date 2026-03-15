@@ -1,0 +1,129 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+
+const navItems = [
+  { href: "/admin", label: "لوحة التحكم", icon: "◉" },
+  { href: "/admin/posts", label: "المقالات", icon: "✎" },
+  { href: "/admin/media", label: "الوسائط", icon: "◫" },
+  { href: "/admin/comments", label: "التعليقات", icon: "◬" },
+  { href: "/admin/projects", label: "المشاريع", icon: "⬡" },
+  { href: "/admin/skills", label: "المهارات", icon: "◈" },
+  { href: "/admin/messages", label: "الرسائل", icon: "✉" },
+  { href: "/admin/links", label: "الروابط", icon: "⊙" },
+  { href: "/admin/settings", label: "الإعدادات", icon: "⚙" },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+
+  function isActive(href: string) {
+    if (href === "/admin") return pathname === "/admin";
+    return pathname.startsWith(href);
+  }
+
+  return (
+    <aside
+      style={{
+        width: 240,
+        minHeight: "100vh",
+        background: "var(--bg-secondary)",
+        borderLeft: "1px solid var(--border)",
+        display: "flex",
+        flexDirection: "column",
+        padding: "16px 0",
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          padding: "0 20px 20px",
+          borderBottom: "1px solid var(--border)",
+          marginBottom: 8,
+        }}
+      >
+        <Link
+          href="/admin"
+          style={{
+            fontSize: 20,
+            fontWeight: 700,
+            color: "var(--accent)",
+            textDecoration: "none",
+          }}
+        >
+          UAEpro
+        </Link>
+        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>
+          لوحة الإدارة
+        </div>
+      </div>
+
+      <nav style={{ flex: 1, padding: "8px 0" }}>
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 20px",
+              fontSize: 14,
+              color: isActive(item.href) ? "var(--accent)" : "var(--text-secondary)",
+              background: isActive(item.href) ? "rgba(249,115,22,0.08)" : "transparent",
+              borderRight: isActive(item.href) ? "3px solid var(--accent)" : "3px solid transparent",
+              textDecoration: "none",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span style={{ fontSize: 16, width: 20, textAlign: "center" }}>{item.icon}</span>
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+
+      <div
+        style={{
+          padding: "12px 20px",
+          borderTop: "1px solid var(--border)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+        }}
+      >
+        <Link
+          href="/"
+          target="_blank"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 13,
+            color: "var(--text-secondary)",
+            textDecoration: "none",
+          }}
+        >
+          ↗ عرض الموقع
+        </Link>
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 13,
+            color: "var(--text-secondary)",
+            padding: 0,
+          }}
+        >
+          ← تسجيل الخروج
+        </button>
+      </div>
+    </aside>
+  );
+}
