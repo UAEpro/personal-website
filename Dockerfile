@@ -9,6 +9,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV DATABASE_URL="mysql://build:build@localhost:3306/build"
 RUN npx prisma generate
 RUN npm run build
 
