@@ -52,7 +52,7 @@ uaepro.me/
 │   │   │   ├── links/
 │   │   │   │   └── page.tsx       # Links/services page
 │   │   │   └── layout.tsx         # Public layout (navbar, footer, RTL)
-│   │   ├── admin/                 # Admin panel
+│   │   ├── admin/                 # Admin panel (RTL Arabic, same as public)
 │   │   │   ├── page.tsx           # Dashboard with analytics
 │   │   │   ├── posts/
 │   │   │   │   ├── page.tsx       # Posts list
@@ -64,6 +64,12 @@ uaepro.me/
 │   │   │   │   └── page.tsx       # Media manager
 │   │   │   ├── comments/
 │   │   │   │   └── page.tsx       # Comment moderation
+│   │   │   ├── projects/
+│   │   │   │   └── page.tsx       # Projects manager
+│   │   │   ├── skills/
+│   │   │   │   └── page.tsx       # Skills/tech stack manager
+│   │   │   ├── messages/
+│   │   │   │   └── page.tsx       # Contact messages
 │   │   │   ├── links/
 │   │   │   │   └── page.tsx       # Links/services manager
 │   │   │   ├── settings/
@@ -74,6 +80,8 @@ uaepro.me/
 │   │   │   │   └── route.ts       # NextAuth handlers
 │   │   │   ├── posts/
 │   │   │   │   ├── route.ts       # GET (list), POST (create)
+│   │   │   │   ├── by-slug/[slug]/
+│   │   │   │   │   └── route.ts   # GET by slug (public)
 │   │   │   │   └── [id]/
 │   │   │   │       └── route.ts   # GET, PUT, DELETE
 │   │   │   ├── media/
@@ -81,9 +89,13 @@ uaepro.me/
 │   │   │   │   └── [id]/
 │   │   │   │       └── route.ts   # DELETE
 │   │   │   ├── categories/
-│   │   │   │   └── route.ts       # GET, POST
+│   │   │   │   ├── route.ts       # GET, POST
+│   │   │   │   └── [id]/
+│   │   │   │       └── route.ts   # PUT, DELETE
 │   │   │   ├── tags/
-│   │   │   │   └── route.ts       # GET, POST
+│   │   │   │   ├── route.ts       # GET, POST
+│   │   │   │   └── [id]/
+│   │   │   │       └── route.ts   # PUT, DELETE
 │   │   │   ├── comments/
 │   │   │   │   ├── route.ts       # GET, POST (public submit)
 │   │   │   │   └── [id]/
@@ -92,10 +104,22 @@ uaepro.me/
 │   │   │   │   ├── route.ts       # GET, POST
 │   │   │   │   └── [id]/
 │   │   │   │       └── route.ts   # PUT, DELETE
+│   │   │   ├── projects/
+│   │   │   │   ├── route.ts       # GET, POST
+│   │   │   │   └── [id]/
+│   │   │   │       └── route.ts   # PUT, DELETE
+│   │   │   ├── skills/
+│   │   │   │   ├── route.ts       # GET, POST
+│   │   │   │   └── [id]/
+│   │   │   │       └── route.ts   # PUT, DELETE
+│   │   │   ├── contact/
+│   │   │   │   ├── route.ts       # GET (admin), POST (public)
+│   │   │   │   └── [id]/
+│   │   │   │       └── route.ts   # PUT (mark read), DELETE
 │   │   │   ├── settings/
 │   │   │   │   └── route.ts       # GET, PUT
 │   │   │   └── analytics/
-│   │   │       └── route.ts       # GET (proxy to Umami/Plausible)
+│   │   │       └── route.ts       # GET (proxy to Umami)
 │   │   └── login/
 │   │       └── page.tsx           # Admin login page
 │   ├── components/
@@ -138,6 +162,7 @@ uaepro.me/
 | Column         | Type     | Notes                          |
 |---------------|----------|--------------------------------|
 | id            | Int (PK) | Auto-increment                 |
+| authorId      | Int (FK) | → User (single user, for data integrity) |
 | title         | String   |                                |
 | slug          | String   | Unique, auto-generated         |
 | content       | Text     | HTML output from Tiptap        |
@@ -216,6 +241,41 @@ uaepro.me/
 | sortOrder  | Int      | For manual ordering                |
 | createdAt  | DateTime | Default: now()                     |
 
+### Project
+
+| Column      | Type     | Notes                              |
+|------------|----------|------------------------------------|
+| id         | Int (PK) | Auto-increment                     |
+| title      | String   |                                    |
+| description| String?  |                                    |
+| techStack  | String?  | Comma-separated tags (e.g., "Next.js, TypeScript") |
+| url        | String?  | External link to project           |
+| image      | String?  | Screenshot/thumbnail URL           |
+| isActive   | Boolean  | Default: true                      |
+| sortOrder  | Int      | For manual ordering                |
+| createdAt  | DateTime | Default: now()                     |
+
+### Skill (tech stack items)
+
+| Column      | Type     | Notes                                    |
+|------------|----------|------------------------------------------|
+| id         | Int (PK) | Auto-increment                           |
+| name       | String   | e.g., "TypeScript", "Python"             |
+| icon       | String?  | Icon URL or icon library name            |
+| category   | String   | language / framework / tool / other      |
+| sortOrder  | Int      | For ordering within category             |
+
+### ContactMessage
+
+| Column      | Type     | Notes                        |
+|------------|----------|------------------------------|
+| id         | Int (PK) | Auto-increment               |
+| name       | String   |                              |
+| email      | String   |                              |
+| message    | Text     |                              |
+| isRead     | Boolean  | Default: false               |
+| createdAt  | DateTime | Default: now()               |
+
 ### SiteSettings (single row)
 
 | Column        | Type | Notes                                    |
@@ -223,11 +283,11 @@ uaepro.me/
 | id           | Int  | Always 1                                 |
 | theme        | JSON | `{ accent, preset, customCSS }`          |
 | socialToggles| JSON | `{ x: bool, instagram: bool, snap: bool }`|
-| socialLinks  | JSON | `{ xUrl, instagramUrl, snapchatUrl }`    |
+| socialLinks  | JSON | `{ xUrl, instagramUrl, snapchatUrl, instagramToken? }` |
 | seoDefaults  | JSON | `{ title, description, ogImage }`        |
 | aboutContent | Text | Rich text for about section              |
 | heroTagline  | String|                                         |
-| apiKey       | String| For Claude Code skill auth              |
+| apiKeyHash  | String | Bcrypt-hashed API key (shown once on generation) |
 
 ---
 
@@ -253,13 +313,13 @@ All sections are Arabic RTL. The Carbon Terminal design language applies through
    - **Snapchat:** Public stories via Snap web embed SDK
    - Each section has a heading and only renders if enabled
 
-6. **Projects/Portfolio** — Grid of cards: title, description, tech stack tags, external link. Managed from admin settings.
+6. **Projects/Portfolio** — Grid of cards from the Project table: title, description, tech stack tags, screenshot, external link. Managed from `/admin/projects`.
 
-7. **Skills/Tech Stack** — Icon grid grouped by category (languages, frameworks, tools). Visual badges.
+7. **Skills/Tech Stack** — Icon grid from the Skill table, grouped by category (language, framework, tool). Managed from `/admin/skills`.
 
 8. **Links/Services** — Grid of active links from the Link table. Icon, title, description, clickable.
 
-9. **Contact** — Contact form (name, email, message) or social links + email display.
+9. **Contact** — Contact form (name, email, message) submitted to `POST /api/contact`. Includes honeypot spam protection. Messages viewable in admin at `/admin/messages`.
 
 10. **Footer** — Copyright, social icons, "Built with Next.js" or similar.
 
@@ -295,7 +355,7 @@ All sections are Arabic RTL. The Carbon Terminal design language applies through
 
 ## 6. Admin Panel
 
-Dark theme matching the public site. Protected by NextAuth session.
+Dark theme matching the public site. RTL Arabic layout (same as public site). Protected by NextAuth session. The Tiptap editor supports both RTL (Arabic) and LTR (code blocks, English text) content via direction toggle.
 
 ### 6.1 Dashboard (`/admin`)
 
@@ -340,13 +400,30 @@ Dark theme matching the public site. Protected by NextAuth session.
 - **Actions per comment:** Approve, reject (delete), view full comment
 - **Filter:** By status (pending/approved), by post
 
-### 6.5 Links Manager (`/admin/links`)
+### 6.5 Projects (`/admin/projects`)
+
+- **List view:** Drag-to-reorder list of projects
+- **Per-item:** Title, description, tech stack tags, URL, screenshot image, active toggle
+- **Actions:** Add new, edit, delete, reorder
+
+### 6.6 Skills (`/admin/skills`)
+
+- **Grouped view:** Skills organized by category (language, framework, tool)
+- **Per-item:** Name, icon, category
+- **Actions:** Add new, edit, delete, reorder within category
+
+### 6.7 Messages (`/admin/messages`)
+
+- **List view:** All contact form submissions — name, email, message preview, date, read/unread status
+- **Actions:** Mark as read, delete
+
+### 6.8 Links Manager (`/admin/links`)
 
 - **List view:** Drag-to-reorder list of all links
 - **Per-item:** Title, description, URL, icon, category dropdown, active toggle
 - **Actions:** Add new, edit, delete, reorder
 
-### 6.6 Settings (`/admin/settings`)
+### 6.9 Settings (`/admin/settings`)
 
 **Theme:**
 - Preset selector: Original Orange, Emerald Hacker, Cyan Frost, Red Ember, Amber Warm, Syntax Theme
@@ -389,20 +466,25 @@ All routes under `/api/`. Authentication via NextAuth session (admin panel) or A
 POST   /api/auth/[...nextauth]     # NextAuth login/logout/session
 
 GET    /api/posts                   # List posts. Query: ?status, ?category, ?tag, ?search, ?page, ?limit
-GET    /api/posts/[slug]            # Get single post by slug
+GET    /api/posts/by-slug/[slug]    # Get single post by slug (public)
+GET    /api/posts/[id]              # Get single post by ID (admin)
 POST   /api/posts                   # Create post. Body: { title, content, status, categoryId, tags[], ... }
 PUT    /api/posts/[id]              # Update post
 DELETE /api/posts/[id]              # Delete post
 
 GET    /api/media                   # List all media files
-POST   /api/media                   # Upload file (multipart/form-data)
+POST   /api/media                   # Upload file (multipart/form-data). Max 10MB per file.
 DELETE /api/media/[id]              # Delete media file (also removes from filesystem)
 
 GET    /api/categories              # List categories
 POST   /api/categories              # Create category. Body: { name, description? }
+PUT    /api/categories/[id]         # Update category
+DELETE /api/categories/[id]         # Delete category (unlinks posts, does not delete them)
 
 GET    /api/tags                    # List tags
 POST   /api/tags                    # Create tag. Body: { name }
+PUT    /api/tags/[id]               # Update tag
+DELETE /api/tags/[id]               # Delete tag (removes from PostTag join table)
 
 GET    /api/comments                # Admin: all. Public: approved for a post (?postId)
 POST   /api/comments                # Public submit. Body: { postId, authorName, authorEmail, content }
@@ -414,11 +496,70 @@ POST   /api/links                   # Create link. Body: { title, description, u
 PUT    /api/links/[id]              # Update link
 DELETE /api/links/[id]              # Delete link
 
+GET    /api/projects                # Public: active only, ordered by sortOrder
+POST   /api/projects                # Create project (auth required)
+PUT    /api/projects/[id]           # Update project (auth required)
+DELETE /api/projects/[id]           # Delete project (auth required)
+
+GET    /api/skills                  # Public: all skills grouped by category
+POST   /api/skills                  # Create skill (auth required)
+PUT    /api/skills/[id]             # Update skill (auth required)
+DELETE /api/skills/[id]             # Delete skill (auth required)
+
+POST   /api/contact                 # Public submit. Body: { name, email, message }
+GET    /api/contact                 # List messages (auth required)
+PUT    /api/contact/[id]            # Mark as read (auth required)
+DELETE /api/contact/[id]            # Delete message (auth required)
+
 GET    /api/settings                # Public: safe subset (theme, social). Auth: full settings
 PUT    /api/settings                # Update settings. Body: partial SiteSettings JSON
 
-GET    /api/analytics               # Proxy analytics data from Umami/Plausible (auth required)
+GET    /api/analytics               # Proxy to Umami. Query: ?period (7d, 30d, 90d). Returns: pageviews, visitors, top pages.
 ```
+
+### Spam Protection
+
+Public endpoints (`POST /api/comments`, `POST /api/contact`) are protected by:
+- **Honeypot field** — hidden form field; if filled, request is silently rejected
+- **Rate limiting** — max 5 submissions per IP per 10 minutes (using in-memory store or Redis)
+
+### Media Upload Constraints
+
+- **Max file size:** 10MB per upload
+- **Allowed types:** jpg, jpeg, png, gif, webp, svg, pdf
+- **Filename sanitization:** Strip special characters, generate unique filename with UUID prefix
+- **Storage path:** `public/uploads/YYYY/MM/<uuid>-<sanitized-name>`
+- **Image optimization:** Resize images > 2000px wide using Sharp, generate WebP variant
+
+### Pagination
+
+All list endpoints support `?page=1&limit=20` (defaults). Response includes:
+```json
+{
+  "success": true,
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 42,
+    "totalPages": 3
+  }
+}
+```
+
+### HTTP Status Codes
+
+| Code | Usage |
+|------|-------|
+| 200  | Success (GET, PUT) |
+| 201  | Created (POST) |
+| 400  | Invalid request body / validation error |
+| 401  | Not authenticated |
+| 403  | Authenticated but not authorized |
+| 404  | Resource not found |
+| 413  | File too large (media upload) |
+| 429  | Rate limited |
+| 500  | Server error |
 
 ### Response Format
 
@@ -434,7 +575,8 @@ Errors:
 ```json
 {
   "success": false,
-  "error": "Error message"
+  "error": "Error message",
+  "code": 400
 }
 ```
 
@@ -507,17 +649,20 @@ The website exposes a REST API authenticated via API key. A Claude Code skill (b
 ### Instagram
 
 - Use Instagram's oEmbed API to fetch embed HTML for recent posts
+- **Requires:** Facebook App access token (long-lived token) — stored in `SiteSettings.socialLinks.instagramToken`
+- Token is configured in admin settings and refreshed manually (long-lived tokens last 60 days, can be refreshed via API)
 - Display as a carousel or grid on the landing page
 - Toggle: on/off from admin settings
-- Config: Instagram profile URL in settings
+- Config: Instagram profile URL + access token in settings
 
 ### Snapchat
 
-- Use Snap's official web embed SDK for public stories
-- Embed from snapchat.com/@uaepro public profile
+- **Primary approach:** Use Snap's official web embed SDK and social plugins to embed public stories from snapchat.com/@uaepro
+- Snap provides embed code via the share/embed button on public profiles and stories
+- The embed script (`snapkit.js`) renders stories in an iframe
 - Toggle: on/off from admin settings
 - Config: Snapchat username in settings
-- Fallback: If embed SDK doesn't cover stories, investigate browser-based approach
+- **Fallback:** If the official embed doesn't surface stories automatically, use the embed code from individual stories (manually updated via admin or scraped via browser automation)
 
 ---
 
@@ -541,6 +686,8 @@ services:
     restart: unless-stopped
 ```
 
+**Note:** The `uploads` volume maps host `./uploads` to container `/app/public/uploads`. In local dev (non-Docker), uploads go directly to `public/uploads/`. The Dockerfile uses Next.js `standalone` output mode and copies the `public` directory into the build. A custom `server.js` serves static files from the uploads directory.
+
 ### Nginx Reverse Proxy
 
 - Proxy pass to localhost:3000
@@ -559,7 +706,48 @@ ADMIN_PASSWORD_HASH=<bcrypt-hash>
 
 ---
 
-## 12. Non-Goals (Out of Scope)
+## 12. Search
+
+Blog search (`?search` param) uses MySQL `LIKE` queries on title, excerpt, and content fields. This is sufficient for a personal blog's scale. If Arabic morphological search becomes needed later, consider adding MySQL full-text search with `ngram` parser.
+
+---
+
+## 13. Caching Strategy
+
+- **Blog posts:** Use Next.js ISR (Incremental Static Regeneration) with `revalidate: 60` (1 minute). Published posts are statically generated and revalidated on demand.
+- **Landing page:** ISR with `revalidate: 300` (5 minutes). Social embeds are client-side rendered.
+- **Admin panel:** No caching — always server-rendered with fresh data.
+- **API routes:** No caching — always fresh. Public GET endpoints may add `Cache-Control` headers for CDN caching later.
+
+---
+
+## 14. Auto-Save
+
+When editing a post:
+1. If the post is **new** (no ID yet): first auto-save triggers `POST /api/posts` with `status: DRAFT`, receives the new post ID, subsequent saves use `PUT /api/posts/[id]`.
+2. If the post **already exists**: auto-save calls `PUT /api/posts/[id]` every 30 seconds when content has changed (dirty check).
+3. A "Saving..." / "Saved" indicator shows in the editor UI.
+
+---
+
+## 15. Seed Script & Initial Setup
+
+A `prisma/seed.ts` script runs on first deployment (`npx prisma db seed`):
+1. Creates the admin User row using `ADMIN_EMAIL` and `ADMIN_PASSWORD_HASH` from env vars
+2. Creates the SiteSettings row (id=1) with default theme (Original Orange), empty social config, and a generated API key
+3. Idempotent — safe to run multiple times
+
+---
+
+## 16. Comment Privacy
+
+- `authorEmail` on comments is **never displayed publicly** — admin-only visibility
+- Emails may be used for Gravatar avatar lookup (hash-based, no exposure)
+- Comment submission includes a note: "Your email will not be displayed publicly"
+
+---
+
+## 17. Non-Goals (Out of Scope)
 
 - Multi-user / multi-author support
 - Newsletter / email subscription
