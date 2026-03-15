@@ -28,6 +28,7 @@ const tabs = [
   { id: "seo", label: "SEO" },
   { id: "content", label: "المحتوى" },
   { id: "api", label: "API" },
+  { id: "skill", label: "المهارة" },
 ];
 
 const themePresets = [
@@ -91,6 +92,39 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
 
   // API state
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+
+  // Skill tab state
+  const [skillCopied, setSkillCopied] = useState(false);
+  const [curlCopied, setCurlCopied] = useState(false);
+
+  const curlInstallCmd = `mkdir -p ~/.claude/skills && curl -o ~/.claude/skills/uaepro-blog.md ${process.env.NEXT_PUBLIC_SITE_URL || "https://uaepro.me"}/api/skill -H "Authorization: Bearer YOUR_API_KEY"`;
+
+  async function handleDownloadSkill() {
+    const res = await fetch("/api/skill");
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "uaepro-blog.md";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleCopySkill() {
+    const res = await fetch("/api/skill");
+    if (!res.ok) return;
+    const text = await res.text();
+    await navigator.clipboard.writeText(text);
+    setSkillCopied(true);
+    setTimeout(() => setSkillCopied(false), 2000);
+  }
+
+  function handleCopyCurl() {
+    navigator.clipboard.writeText(curlInstallCmd);
+    setCurlCopied(true);
+    setTimeout(() => setCurlCopied(false), 2000);
+  }
 
   async function saveSettings(data: Record<string, unknown>) {
     setSaving(true);
@@ -547,6 +581,136 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
             >
               {saving ? "جاري الإنشاء..." : settings.apiKeyHash ? "إعادة إنشاء المفتاح" : "إنشاء مفتاح جديد"}
             </button>
+          </div>
+        )}
+
+        {/* Skill Tab */}
+        {activeTab === "skill" && (
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
+              مهارة Claude Code
+            </h3>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 20, lineHeight: 1.6 }}>
+              هذه المهارة تتيح لـ Claude Code إدارة مقالات المدونة مباشرةً من سطر الأوامر.
+              يمكنك كتابة مقالات، نشرها، وتعديلها بالكلام الطبيعي.
+            </p>
+
+            {/* Download / Copy buttons */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+              <button
+                onClick={handleDownloadSkill}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 6,
+                  border: "none",
+                  background: "var(--accent)",
+                  color: "var(--bg-primary)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                تحميل المهارة
+              </button>
+              <button
+                onClick={handleCopySkill}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 6,
+                  border: "1px solid var(--border)",
+                  background: "var(--bg-primary)",
+                  color: "var(--text-primary)",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                {skillCopied ? "تم النسخ!" : "نسخ المحتوى"}
+              </button>
+            </div>
+
+            {/* Installation command */}
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <label style={labelStyle}>أمر التثبيت السريع</label>
+                <button
+                  onClick={handleCopyCurl}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    border: "1px solid var(--border)",
+                    background: "transparent",
+                    color: "var(--text-secondary)",
+                    fontSize: 12,
+                    cursor: "pointer",
+                  }}
+                >
+                  {curlCopied ? "تم النسخ!" : "نسخ"}
+                </button>
+              </div>
+              <pre
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 6,
+                  background: "var(--bg-primary)",
+                  border: "1px solid var(--border)",
+                  fontFamily: "monospace",
+                  fontSize: 12,
+                  color: "var(--text-secondary)",
+                  overflowX: "auto",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-all",
+                  margin: 0,
+                }}
+              >
+                {curlInstallCmd}
+              </pre>
+            </div>
+
+            {/* Env vars reminder */}
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: 6,
+                background: "rgba(245,158,11,0.1)",
+                border: "1px solid rgba(245,158,11,0.3)",
+                marginBottom: 24,
+              }}
+            >
+              <p style={{ fontSize: 13, color: "#f59e0b", fontWeight: 600, marginBottom: 8 }}>
+                متغيرات البيئة المطلوبة
+              </p>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, lineHeight: 1.7 }}>
+                أضف هذه المتغيرات إلى ملف إعداد Claude Code (<code style={{ fontFamily: "monospace" }}>~/.claude/settings.json</code> أو متغيرات الشل):
+                <br />
+                <code style={{ fontFamily: "monospace", display: "block", marginTop: 6 }}>
+                  UAEPRO_API_KEY=&lt;مفتاح API من تبويب API&gt;
+                </code>
+              </p>
+            </div>
+
+            {/* Skill file content preview */}
+            <div>
+              <label style={labelStyle}>محتوى ملف المهارة (للمراجعة)</label>
+              <textarea
+                readOnly
+                defaultValue={`# تحميل المحتوى من /api/skill ...`}
+                onFocus={async (e) => {
+                  if (e.target.value.startsWith("# تحميل")) {
+                    const res = await fetch("/api/skill");
+                    if (res.ok) e.target.value = await res.text();
+                  }
+                }}
+                rows={14}
+                style={{
+                  ...inputStyle,
+                  fontFamily: "monospace",
+                  fontSize: 12,
+                  resize: "vertical",
+                  cursor: "text",
+                  color: "var(--text-secondary)",
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
