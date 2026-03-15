@@ -6,7 +6,7 @@ import SocialFeeds from "@/components/public/social-feeds";
 import Link from "next/link";
 import Image from "next/image";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 async function getData() {
   try {
@@ -34,7 +34,8 @@ async function getData() {
     ]);
 
     return { settings, posts, projects, skills, links };
-  } catch {
+  } catch (e) {
+    console.error("getData error:", e);
     return { settings: null, posts: [], projects: [], skills: [], links: [] };
   }
 }
