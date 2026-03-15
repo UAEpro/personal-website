@@ -65,3 +65,17 @@ body {
   font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
   line-height: 1.8;
 }
+
+.hover-card:hover {
+  border-color: var(--accent) !important;
+  transform: translateY(-2px);
+}
+
+.hover-link:hover {
+  border-color: var(--accent) !important;
+  transform: translateY(-1px);
+}
+
+.footer-social-link:hover {
+  color: var(--text-primary) !important;
+}

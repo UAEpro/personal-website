@@ -1,0 +1,104 @@
+interface FooterProps {
+  socialLinks: {
+    xUrl?: string;
+    instagramUrl?: string;
+    snapchatUrl?: string;
+  };
+  socialToggles: {
+    x?: boolean;
+    instagram?: boolean;
+    snapchat?: boolean;
+  };
+}
+
+export default function Footer({ socialLinks, socialToggles }: FooterProps) {
+  const year = new Date().getFullYear();
+
+  const linkStyle: React.CSSProperties = {
+    color: "var(--text-secondary)",
+    transition: "color 0.2s",
+    textDecoration: "none",
+  };
+
+  return (
+    <footer
+      style={{
+        borderTop: "1px solid var(--border)",
+        background: "var(--bg-secondary)",
+        padding: "40px 24px",
+        marginTop: 80,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 24,
+        }}
+      >
+        {/* Social Links */}
+        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+          {socialToggles.x && socialLinks.xUrl && (
+            <a
+              href={socialLinks.xUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="X (Twitter)"
+              className="footer-social-link"
+              style={linkStyle}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
+          )}
+          {socialToggles.instagram && socialLinks.instagramUrl && (
+            <a
+              href={socialLinks.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="footer-social-link"
+              style={linkStyle}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg>
+            </a>
+          )}
+          {socialToggles.snapchat && socialLinks.snapchatUrl && (
+            <a
+              href={socialLinks.snapchatUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Snapchat"
+              className="footer-social-link"
+              style={linkStyle}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12.922-.214.095-.034.185-.066.272-.093a.72.72 0 0 1 .115-.018c.249 0 .44.2.44.443 0 .199-.123.384-.313.472-.116.054-.25.097-.39.141l-.004.002c-.477.156-.783.308-.796.629-.006.147.08.295.196.442l.018.023c.349.46 1.036 1.1 1.632 1.369.18.08.377.198.377.456 0 .166-.1.346-.305.485-.472.323-1.235.422-1.518.467l-.037.006c-.064.01-.093.028-.105.07-.014.046-.007.115.007.195.017.095.038.191.062.29.024.096.05.194.067.268a.524.524 0 0 1-.105.484c-.168.192-.464.292-.84.292-.196 0-.409-.026-.626-.065-.298-.054-.632-.072-.982-.072-.327 0-.637.015-.883.08a3.567 3.567 0 0 0-.793.39c-.627.37-1.204.759-2.403.759h-.058c-1.2 0-1.777-.39-2.404-.76a3.568 3.568 0 0 0-.793-.39c-.247-.064-.556-.08-.883-.08-.35 0-.684.02-.981.073a4.876 4.876 0 0 1-.627.064c-.396 0-.68-.113-.836-.302a.52.52 0 0 1-.1-.475c.017-.075.042-.17.066-.267.024-.099.045-.196.063-.29.014-.08.02-.149.006-.196-.012-.042-.04-.06-.105-.07l-.037-.006c-.283-.045-1.046-.144-1.518-.467-.205-.139-.305-.319-.305-.485 0-.258.197-.376.377-.456.596-.27 1.283-.91 1.632-1.37l.018-.022c.116-.147.203-.295.196-.442-.013-.32-.319-.473-.796-.63l-.004-.001a2.853 2.853 0 0 1-.39-.14c-.19-.09-.313-.274-.313-.473 0-.243.19-.443.44-.443l.115.018c.087.027.177.06.272.093.263.094.622.23.922.214.198 0 .326-.045.401-.09a10.86 10.86 0 0 1-.03-.51l-.003-.06c-.104-1.628-.23-3.654.3-4.847C7.846 1.069 11.216.793 12.206.793" />
+              </svg>
+            </a>
+          )}
+        </div>
+
+        {/* Copyright */}
+        <p
+          style={{
+            color: "var(--text-secondary)",
+            fontSize: 14,
+            fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+            margin: 0,
+          }}
+        >
+          &copy; {year} UAEpro. جميع الحقوق محفوظة.
+        </p>
+      </div>
+    </footer>
+  );
+}
