@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  posts        Post[]
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Post {
+  id             Int        @id @default(autoincrement())
+  authorId       Int
+  author         User       @relation(fields: [authorId], references: [id])
+  title          String
+  slug           String     @unique
+  content        String     @db.LongText
+  excerpt        String     @db.Text
+  coverImage     String?
+  status         PostStatus @default(DRAFT)
+  categoryId     Int?
+  category       Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  readingTime    Int        @default(0)
+  seoTitle       String?
+  seoDescription String?    @db.Text
+  ogImage        String?
+  publishedAt    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  tags           PostTag[]
+  comments       Comment[]
+  @@index([status])
+  @@index([slug])
+  @@index([categoryId])
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String
+  slug        String  @unique
+  description String?
+  posts       Post[]
+}
+
+model Tag {
+  id    Int       @id @default(autoincrement())
+  name  String
+  slug  String    @unique
+  posts PostTag[]
+}
+
+model PostTag {
+  postId Int
+  tagId  Int
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  @@id([postId, tagId])
+}
+
+model Media {
+  id           Int      @id @default(autoincrement())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  alt          String?
+  createdAt    DateTime @default(now())
+}
+
+model Comment {
+  id          Int      @id @default(autoincrement())
+  postId      Int
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorName  String
+  authorEmail String
+  content     String   @db.Text
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  @@index([postId])
+  @@index([isApproved])
+}
+
+model Link {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  url         String
+  icon        String?
+  category    String   @default("other")
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  techStack   String?
+  url         String?
+  image       String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Skill {
+  id        Int    @id @default(autoincrement())
+  name      String
+  icon      String?
+  category  String @default("other")
+  sortOrder Int    @default(0)
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id            Int    @id @default(1)
+  theme         Json   @default("{\"preset\":\"orange\",\"accent\":\"#f97316\"}")
+  socialToggles Json   @default("{\"x\":false,\"instagram\":false,\"snapchat\":false}")
+  socialLinks   Json   @default("{\"xUrl\":\"\",\"instagramUrl\":\"\",\"snapchatUrl\":\"\",\"instagramToken\":\"\"}")
+  seoDefaults   Json   @default("{\"title\":\"UAEpro\",\"description\":\"\",\"ogImage\":\"\"}")
+  aboutContent  String @db.LongText @default("")
+  heroTagline   String @default("مبرمج | صانع محتوى | قيمر")
+  apiKeyHash    String @default("")
+}
