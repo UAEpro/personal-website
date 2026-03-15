@@ -21,8 +21,9 @@ export async function GET(req: NextRequest) {
     const html = await res.text();
 
     // Extract JSON-LD structured data from the page
+    // The script tag may have extra attributes like data-react-helmet="true"
     const jsonLdMatches = html.match(
-      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
+      /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g
     );
     if (!jsonLdMatches) return success({ stories: [], profile: null });
 
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
 
     for (const match of jsonLdMatches) {
       const jsonStr = match
-        .replace(/<script type="application\/ld\+json">/, "")
+        .replace(/<script[^>]*>/, "")
         .replace(/<\/script>/, "");
       try {
         const data = JSON.parse(jsonStr);
