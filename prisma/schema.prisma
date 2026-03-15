@@ -142,7 +142,7 @@ model SiteSettings {
   socialToggles Json   @default("{\"x\":false,\"instagram\":false,\"snapchat\":false}")
   socialLinks   Json   @default("{\"xUrl\":\"\",\"instagramUrl\":\"\",\"snapchatUrl\":\"\",\"instagramToken\":\"\"}")
   seoDefaults   Json   @default("{\"title\":\"UAEpro\",\"description\":\"\",\"ogImage\":\"\"}")
-  aboutContent  String @db.LongText @default("")
+  aboutContent  String @db.LongText
   heroTagline   String @default("مبرمج | صانع محتوى | قيمر")
   apiKeyHash    String @default("")
 }

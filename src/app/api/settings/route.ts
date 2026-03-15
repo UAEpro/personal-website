@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   // Ensure settings row exists
   const settings = await prisma.siteSettings.upsert({
     where: { id: 1 },
-    create: { id: 1 },
+    create: { id: 1, aboutContent: "" },
     update: {},
   });
 
@@ -74,7 +74,7 @@ export async function PUT(req: NextRequest) {
 
   await prisma.siteSettings.upsert({
     where: { id: 1 },
-    create: { id: 1, ...updateData },
+    create: { id: 1, aboutContent: "", ...updateData },
     update: updateData,
   });
 

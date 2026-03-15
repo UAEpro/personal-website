@@ -4,7 +4,7 @@ import SettingsForm from "@/components/admin/settings-form";
 async function getSettings() {
   const settings = await prisma.siteSettings.upsert({
     where: { id: 1 },
-    create: { id: 1 },
+    create: { id: 1, aboutContent: "" },
     update: {},
   });
   return settings;
