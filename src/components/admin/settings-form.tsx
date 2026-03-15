@@ -31,13 +31,12 @@ const tabs = [
   { id: "skill", label: "المهارة" },
 ];
 
-const themePresets = [
-  { id: "orange", color: "#f97316", label: "برتقالي" },
-  { id: "emerald", color: "#10b981", label: "أخضر" },
-  { id: "cyan", color: "#06b6d4", label: "سماوي" },
-  { id: "red", color: "#ef4444", label: "أحمر" },
-  { id: "amber", color: "#f59e0b", label: "عنبري" },
-  { id: "syntax", color: "#cba6f7", label: "بنفسجي" },
+const themePresetsList = [
+  { id: "carbon-orange", label: "كربوني برتقالي", accent: "#f97316", bgPrimary: "#111113", bgSecondary: "#1a1a1e" },
+  { id: "midnight-purple", label: "بنفسجي ليلي", accent: "#a78bfa", bgPrimary: "#0f0c29", bgSecondary: "#1a1540" },
+  { id: "ocean-cyan", label: "محيط سماوي", accent: "#06b6d4", bgPrimary: "#0c1222", bgSecondary: "#131d33" },
+  { id: "ember-red", label: "أحمر ملتهب", accent: "#ef4444", bgPrimary: "#120c0c", bgSecondary: "#1e1414" },
+  { id: "forest-green", label: "غابة خضراء", accent: "#10b981", bgPrimary: "#0c1210", bgSecondary: "#141e1a" },
 ];
 
 const inputStyle: React.CSSProperties = {
@@ -65,7 +64,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
   const [message, setMessage] = useState("");
 
   // Theme state
-  const [themePreset, setThemePreset] = useState(settings.theme?.preset || "orange");
+  const [themePreset, setThemePreset] = useState(settings.theme?.preset || "carbon-orange");
   const [customColor, setCustomColor] = useState(settings.theme?.accent || "#f97316");
 
   // Social state
@@ -236,49 +235,85 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         {activeTab === "theme" && (
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 16 }}>
-              الألوان المحددة مسبقاً
+              المظاهر
             </h3>
-            <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-              {themePresets.map((preset) => (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
+              {themePresetsList.map((preset) => (
                 <button
                   key={preset.id}
                   onClick={() => {
                     setThemePreset(preset.id);
-                    setCustomColor(preset.color);
+                    setCustomColor(preset.accent);
                   }}
                   style={{
-                    width: 80,
-                    padding: "12px 8px",
-                    borderRadius: 8,
+                    padding: 0,
+                    borderRadius: 10,
                     border:
                       themePreset === preset.id
-                        ? `2px solid ${preset.color}`
+                        ? `2px solid ${preset.accent}`
                         : "2px solid var(--border)",
-                    background: themePreset === preset.id ? `${preset.color}15` : "var(--bg-primary)",
+                    background: "transparent",
                     cursor: "pointer",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 8,
+                    overflow: "hidden",
+                    textAlign: "center",
                   }}
                 >
+                  {/* Mini preview */}
                   <div
                     style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      background: preset.color,
+                      height: 64,
+                      background: preset.bgPrimary,
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      padding: 8,
                     }}
-                  />
-                  <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                  >
+                    {/* Simulated secondary block */}
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 6,
+                        background: preset.bgSecondary,
+                        border: `1px solid ${preset.accent}33`,
+                      }}
+                    />
+                    {/* Accent circle */}
+                    <div
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: "50%",
+                        background: preset.accent,
+                      }}
+                    />
+                    {/* Simulated text lines */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                      <div style={{ width: 32, height: 4, borderRadius: 2, background: "#e4e4e780" }} />
+                      <div style={{ width: 24, height: 3, borderRadius: 2, background: "#88888860" }} />
+                    </div>
+                  </div>
+                  {/* Label */}
+                  <div
+                    style={{
+                      padding: "8px 4px",
+                      fontSize: 12,
+                      color: themePreset === preset.id ? preset.accent : "var(--text-secondary)",
+                      fontWeight: themePreset === preset.id ? 600 : 400,
+                      background: themePreset === preset.id ? `${preset.accent}10` : "var(--bg-primary)",
+                    }}
+                  >
                     {preset.label}
-                  </span>
+                  </div>
                 </button>
               ))}
             </div>
 
             <h3 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 12 }}>
-              لون مخصص
+              لون مخصص (يُطبق فوق المظهر المختار)
             </h3>
             <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 24 }}>
               <input

@@ -7,7 +7,8 @@ import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
+import type { EditorView } from "@tiptap/pm/view";
 
 interface TiptapEditorProps {
   content: string;
@@ -60,6 +61,28 @@ function ToolbarButton({
 }
 
 export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
+  const [uploading, setUploading] = useState(false);
+
+  const uploadAndInsertImage = useCallback(async (file: File, view: EditorView) => {
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/media", { method: "POST", body: form });
+      const data = await res.json();
+      if (data.success && data.data?.url) {
+        const { tr } = view.state;
+        const pos = view.state.selection.from;
+        const node = view.state.schema.nodes.image.create({ src: data.data.url });
+        view.dispatch(tr.insert(pos, node));
+      }
+    } catch {
+      // Upload failed silently
+    } finally {
+      setUploading(false);
+    }
+  }, []);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -80,6 +103,27 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         dir: "rtl",
         style:
           "min-height: 400px; padding: 20px; outline: none; font-size: 16px; line-height: 1.8; color: var(--text-primary);",
+      },
+      handlePaste: (view, event) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find(item => item.type.startsWith("image/"));
+        if (imageItem) {
+          event.preventDefault();
+          const file = imageItem.getAsFile();
+          if (file) uploadAndInsertImage(file, view);
+          return true;
+        }
+        return false;
+      },
+      handleDrop: (view, event) => {
+        const files = Array.from(event.dataTransfer?.files || []);
+        const imageFile = files.find(f => f.type.startsWith("image/"));
+        if (imageFile) {
+          event.preventDefault();
+          uploadAndInsertImage(imageFile, view);
+          return true;
+        }
+        return false;
       },
     },
     onUpdate: ({ editor: ed }) => {
@@ -281,6 +325,22 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           ↷
         </ToolbarButton>
       </div>
+
+      {/* Uploading indicator */}
+      {uploading && (
+        <div
+          style={{
+            padding: "6px 12px",
+            background: "var(--bg-secondary)",
+            borderBottom: "1px solid var(--border)",
+            fontSize: 12,
+            color: "var(--accent)",
+            textAlign: "center",
+          }}
+        >
+          جاري رفع الصورة...
+        </div>
+      )}
 
       {/* Editor content */}
       <EditorContent editor={editor} />

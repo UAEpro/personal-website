@@ -33,7 +33,7 @@ async function main() {
     update: {},
     create: {
       id: 1,
-      theme: { preset: "orange", accent: "#f97316" },
+      theme: { preset: "carbon-orange", accent: "#f97316" },
       socialToggles: { x: false, instagram: false, snapchat: false },
       socialLinks: { xUrl: "", instagramUrl: "", snapchatUrl: "", instagramToken: "" },
       seoDefaults: { title: "UAEpro", description: "مبرمج | صانع محتوى | قيمر", ogImage: "" },

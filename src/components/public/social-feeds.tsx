@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 interface SocialFeedsProps {
   toggles: {
@@ -21,6 +21,7 @@ interface SnapStory {
   contentUrl: string;
   uploadDate: string;
   description: string;
+  encodingFormat?: string;
 }
 
 interface SnapProfile {
@@ -34,7 +35,11 @@ interface SnapProfile {
 function TwitterFeed({ url }: { url: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const username = url.replace(/\/$/, "").split("/").pop() || "";
+  // Extract username from x.com or twitter.com URLs
+  const username = url
+    .replace(/\/$/, "")
+    .replace(/https?:\/\/(www\.)?(x\.com|twitter\.com)\/?/, "")
+    .split("/")[0] || "";
 
   useEffect(() => {
     if (!username) return;
@@ -43,7 +48,10 @@ function TwitterFeed({ url }: { url: string }) {
       const win = window as unknown as Record<string, unknown>;
       if (win.twttr) {
         const twttr = win.twttr as { widgets?: { load: (el?: HTMLElement) => void } };
-        twttr.widgets?.load(containerRef.current || undefined);
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          twttr.widgets?.load(containerRef.current || undefined);
+        }, 300);
       }
     };
 
@@ -53,7 +61,10 @@ function TwitterFeed({ url }: { url: string }) {
       script.id = "twitter-wjs";
       script.src = "https://platform.twitter.com/widgets.js";
       script.async = true;
-      script.onload = loadWidgets;
+      script.onload = () => {
+        // Wait for twttr to be ready
+        setTimeout(loadWidgets, 500);
+      };
       document.body.appendChild(script);
     } else {
       // Script already exists, just reload widgets
@@ -126,7 +137,7 @@ function TwitterFeed({ url }: { url: string }) {
           className="twitter-timeline"
           data-height="480"
           data-theme="dark"
-          data-chrome="noheader nofooter noborders transparent"
+          data-chrome="noheader nofooter noborders"
           data-tweet-limit="3"
           href={`https://twitter.com/${username}`}
         >
@@ -301,12 +312,216 @@ function InstagramFeed({ url }: { url: string }) {
   );
 }
 
+/* ─── Snapchat Story Viewer Modal ─── */
+function StoryViewer({
+  stories,
+  initialIndex,
+  onClose,
+}: {
+  stories: SnapStory[];
+  initialIndex: number;
+  onClose: () => void;
+}) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const story = stories[currentIndex];
+
+  const isVideo =
+    story?.encodingFormat?.includes("video") ||
+    story?.contentUrl?.includes("video") ||
+    story?.contentUrl?.endsWith(".mp4");
+
+  const goNext = useCallback(() => {
+    setCurrentIndex((i) => (i < stories.length - 1 ? i + 1 : i));
+  }, [stories.length]);
+
+  const goPrev = useCallback(() => {
+    setCurrentIndex((i) => (i > 0 ? i - 1 : i));
+  }, []);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") goPrev(); // RTL: right = prev
+      if (e.key === "ArrowLeft") goNext(); // RTL: left = next
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose, goNext, goPrev]);
+
+  // Prevent body scroll
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  if (!story) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 99999,
+        background: "rgba(0,0,0,0.92)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      onClick={onClose}
+    >
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        style={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          zIndex: 3,
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          border: "none",
+          background: "rgba(255,255,255,0.15)",
+          color: "white",
+          fontSize: 22,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        x
+      </button>
+
+      {/* Counter */}
+      <div
+        style={{
+          position: "absolute",
+          top: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          color: "rgba(255,255,255,0.7)",
+          fontSize: 14,
+          fontFamily: "'IBM Plex Mono', monospace",
+          zIndex: 3,
+        }}
+      >
+        {currentIndex + 1} / {stories.length}
+      </div>
+
+      {/* Prev button */}
+      {currentIndex > 0 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            goPrev();
+          }}
+          style={{
+            position: "absolute",
+            right: 16,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 3,
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            border: "none",
+            background: "rgba(255,255,255,0.15)",
+            color: "white",
+            fontSize: 24,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          &#x203A;
+        </button>
+      )}
+
+      {/* Next button */}
+      {currentIndex < stories.length - 1 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            goNext();
+          }}
+          style={{
+            position: "absolute",
+            left: 16,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 3,
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            border: "none",
+            background: "rgba(255,255,255,0.15)",
+            color: "white",
+            fontSize: 24,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          &#x2039;
+        </button>
+      )}
+
+      {/* Content */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: "90vw",
+          maxHeight: "85vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isVideo ? (
+          <video
+            key={story.contentUrl}
+            src={story.contentUrl}
+            controls
+            autoPlay
+            playsInline
+            style={{
+              maxWidth: "90vw",
+              maxHeight: "85vh",
+              borderRadius: 12,
+              objectFit: "contain",
+            }}
+          />
+        ) : (
+          <img
+            key={story.contentUrl}
+            src={story.contentUrl || story.thumbnail}
+            alt={story.description || "Story"}
+            style={{
+              maxWidth: "90vw",
+              maxHeight: "85vh",
+              borderRadius: 12,
+              objectFit: "contain",
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Snapchat Stories Carousel ─── */
 function SnapchatStories({ url }: { url: string }) {
   const [stories, setStories] = useState<SnapStory[]>([]);
   const [profile, setProfile] = useState<SnapProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Extract username from URL like https://snapchat.com/@username or https://www.snapchat.com/add/username
@@ -349,10 +564,10 @@ function SnapchatStories({ url }: { url: string }) {
       const now = new Date();
       const diffMs = now.getTime() - date.getTime();
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-      if (diffHours < 1) return "الآن";
-      if (diffHours < 24) return `${diffHours} س`;
+      if (diffHours < 1) return "\u0627\u0644\u0622\u0646";
+      if (diffHours < 24) return `${diffHours} \u0633`;
       const diffDays = Math.floor(diffHours / 24);
-      if (diffDays < 7) return `${diffDays} ي`;
+      if (diffDays < 7) return `${diffDays} \u064A`;
       return new Intl.DateTimeFormat("ar-SA", {
         month: "short",
         day: "numeric",
@@ -512,11 +727,9 @@ function SnapchatStories({ url }: { url: string }) {
           {!loading &&
             stories.length > 0 &&
             stories.map((story, i) => (
-              <a
+              <button
                 key={`story-${i}`}
-                href={story.url || url}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={() => setViewerIndex(i)}
                 style={{
                   flexShrink: 0,
                   width: 120,
@@ -529,6 +742,8 @@ function SnapchatStories({ url }: { url: string }) {
                   textDecoration: "none",
                   display: "block",
                   transition: "transform 0.2s, box-shadow 0.2s",
+                  background: "transparent",
+                  padding: 0,
                 }}
               >
                 {/* Thumbnail */}
@@ -560,6 +775,39 @@ function SnapchatStories({ url }: { url: string }) {
                   />
                 )}
 
+                {/* Play icon for videos */}
+                {(story.encodingFormat?.includes("video") ||
+                  story.contentUrl?.includes("video") ||
+                  story.contentUrl?.endsWith(".mp4")) && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: "rgba(0,0,0,0.5)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      zIndex: 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 0,
+                        height: 0,
+                        borderTop: "8px solid transparent",
+                        borderBottom: "8px solid transparent",
+                        borderLeft: "14px solid white",
+                        marginLeft: 3,
+                      }}
+                    />
+                  </div>
+                )}
+
                 {/* Bottom gradient overlay */}
                 <div
                   style={{
@@ -585,7 +833,7 @@ function SnapchatStories({ url }: { url: string }) {
                     {formatStoryDate(story.uploadDate)}
                   </span>
                 </div>
-              </a>
+              </button>
             ))}
 
           {/* No stories / error state */}
@@ -673,6 +921,15 @@ function SnapchatStories({ url }: { url: string }) {
           )}
         </div>
       </div>
+
+      {/* Story Viewer Modal */}
+      {viewerIndex !== null && stories.length > 0 && (
+        <StoryViewer
+          stories={stories}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      )}
 
       {/* CSS for hiding scrollbar and pulse animation */}
       <style
