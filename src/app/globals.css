@@ -177,11 +177,15 @@ img, video, iframe, pre, table {
 .social-feeds-grid-3 {
   grid-template-columns: repeat(3, 1fr);
 }
+.social-feeds-grid-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
 
 @media (max-width: 768px) {
   .social-feeds-grid-1,
   .social-feeds-grid-2,
-  .social-feeds-grid-3 {
+  .social-feeds-grid-3,
+  .social-feeds-grid-4 {
     grid-template-columns: 1fr !important;
   }
   .twitter-timeline-container {
