@@ -26,6 +26,7 @@ export default async function AdminSettingsPage() {
     aboutContent: settings.aboutContent,
     heroTagline: settings.heroTagline,
     apiKeyHash: settings.apiKeyHash,
+    sectionToggles: (settings.sectionToggles as Record<string, boolean>) || {},
   };
 
   return (

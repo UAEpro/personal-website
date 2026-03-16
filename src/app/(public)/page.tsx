@@ -119,6 +119,9 @@ export default async function HomePage() {
 
   const hasAnySocialToggle = socialToggles.x || socialToggles.instagram || socialToggles.snapchat || socialToggles.github;
 
+  const sections = (settings?.sectionToggles as Record<string, boolean>) || {};
+  const showSection = (key: string) => sections[key] !== false;
+
   return (
     <>
       {/* Scroll reveal animator */}
@@ -128,7 +131,7 @@ export default async function HomePage() {
       <Hero tagline={tagline} />
 
       {/* 2. About Me */}
-      {aboutContent && (
+      {showSection("about") && aboutContent && (
         <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="عني" />
           <div
@@ -147,7 +150,7 @@ export default async function HomePage() {
       )}
 
       {/* 3. Latest Blog Posts */}
-      {posts.length > 0 && (
+      {showSection("blog") && posts.length > 0 && (
         <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="آخر المقالات" />
           <div
@@ -245,7 +248,7 @@ export default async function HomePage() {
       )}
 
       {/* 4. Social Feeds */}
-      {hasAnySocialToggle && (
+      {showSection("social") && hasAnySocialToggle && (
         <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="تابعني" />
           <SocialFeeds toggles={socialToggles} links={socialLinks} order={socialOrder} />
@@ -253,7 +256,7 @@ export default async function HomePage() {
       )}
 
       {/* 5. Projects */}
-      {projects.length > 0 && (
+      {showSection("projects") && projects.length > 0 && (
         <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="المشاريع" />
           <div
@@ -335,7 +338,7 @@ export default async function HomePage() {
       )}
 
       {/* 6. Skills */}
-      {skills.length > 0 && (
+      {showSection("skills") && skills.length > 0 && (
         <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="المهارات" />
           <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
@@ -382,7 +385,7 @@ export default async function HomePage() {
       )}
 
       {/* 7. Links / Services */}
-      {links.length > 0 && (
+      {showSection("links") && links.length > 0 && (
         <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="روابط وخدمات" />
           <div
@@ -444,18 +447,22 @@ export default async function HomePage() {
       )}
 
       {/* 8. Newsletter */}
-      <section className={sectionClassName} style={sectionStyle}>
-        <SectionHeading title="النشرة البريدية" />
-        <div style={{ maxWidth: 500 }}>
-          <NewsletterForm />
-        </div>
-      </section>
+      {showSection("newsletter") && (
+        <section className={sectionClassName} style={sectionStyle}>
+          <SectionHeading title="النشرة البريدية" />
+          <div style={{ maxWidth: 500 }}>
+            <NewsletterForm />
+          </div>
+        </section>
+      )}
 
       {/* 9. Contact Form */}
-      <section id="contact" className={sectionClassName} style={sectionStyle}>
-        <SectionHeading title="تواصل معي" />
-        <ContactForm />
-      </section>
+      {showSection("contact") && (
+        <section id="contact" className={sectionClassName} style={sectionStyle}>
+          <SectionHeading title="تواصل معي" />
+          <ContactForm />
+        </section>
+      )}
     </>
   );
 }

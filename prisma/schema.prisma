@@ -169,5 +169,6 @@ model SiteSettings {
   seoDefaults   Json   @default("{\"title\":\"UAEpro\",\"description\":\"\",\"ogImage\":\"\"}")
   aboutContent  String @db.LongText
   heroTagline   String @default("مبرمج | صانع محتوى | قيمر")
+  sectionToggles Json @default("{\"about\":true,\"blog\":true,\"social\":true,\"projects\":true,\"skills\":true,\"links\":true,\"newsletter\":true,\"contact\":true}")
   apiKeyHash    String @default("")
 }

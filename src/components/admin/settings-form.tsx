@@ -18,6 +18,7 @@ interface SiteSettings {
   aboutContent: string;
   heroTagline: string;
   apiKeyHash: string;
+  sectionToggles: Record<string, boolean>;
 }
 
 interface SettingsFormProps {
@@ -28,6 +29,7 @@ const tabs = [
   { id: "theme", label: "المظهر" },
   { id: "social", label: "التواصل الاجتماعي" },
   { id: "seo", label: "SEO" },
+  { id: "sections", label: "الأقسام" },
   { id: "content", label: "المحتوى" },
   { id: "api", label: "API" },
   { id: "skill", label: "المهارة" },
@@ -93,6 +95,16 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
   const [seoTitle, setSeoTitle] = useState(settings.seoDefaults?.title || "");
   const [seoDescription, setSeoDescription] = useState(settings.seoDefaults?.description || "");
   const [seoOgImage, setSeoOgImage] = useState(settings.seoDefaults?.ogImage || "");
+
+  // Section toggles state
+  const defaultSections: Record<string, boolean> = {
+    about: true, blog: true, social: true, projects: true,
+    skills: true, links: true, newsletter: true, contact: true,
+  };
+  const [sectionToggles, setSectionToggles] = useState<Record<string, boolean>>({
+    ...defaultSections,
+    ...settings.sectionToggles,
+  });
 
   // Content state
   const [heroTagline, setHeroTagline] = useState(settings.heroTagline || "");
@@ -557,6 +569,88 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
               }}
             >
               {saving ? "جاري الحفظ..." : "حفظ إعدادات SEO"}
+            </button>
+          </div>
+        )}
+
+        {/* Sections Tab */}
+        {activeTab === "sections" && (
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
+              أقسام الصفحة الرئيسية
+            </h3>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 20 }}>
+              تحكم في إظهار أو إخفاء أقسام الصفحة الرئيسية
+            </p>
+            {[
+              { key: "about", label: "عنّي" },
+              { key: "blog", label: "آخر المقالات" },
+              { key: "social", label: "تابعني (التواصل الاجتماعي)" },
+              { key: "projects", label: "المشاريع" },
+              { key: "skills", label: "المهارات" },
+              { key: "links", label: "روابط وخدمات" },
+              { key: "newsletter", label: "النشرة البريدية" },
+              { key: "contact", label: "تواصل معي" },
+            ].map((section) => (
+              <div
+                key={section.key}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "12px 0",
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                <span style={{ fontSize: 14, color: "var(--text-primary)" }}>{section.label}</span>
+                <div
+                  onClick={() =>
+                    setSectionToggles((prev) => ({
+                      ...prev,
+                      [section.key]: !prev[section.key],
+                    }))
+                  }
+                  style={{
+                    width: 40,
+                    height: 22,
+                    borderRadius: 11,
+                    background: sectionToggles[section.key] !== false ? "var(--accent)" : "var(--border)",
+                    position: "relative",
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: "50%",
+                      background: "white",
+                      position: "absolute",
+                      top: 2,
+                      right: sectionToggles[section.key] !== false ? 2 : 20,
+                      transition: "right 0.2s",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={() => saveSettings({ sectionToggles })}
+              disabled={saving}
+              style={{
+                marginTop: 20,
+                padding: "10px 24px",
+                borderRadius: 6,
+                border: "none",
+                background: "var(--accent)",
+                color: "var(--bg-primary)",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              {saving ? "جاري الحفظ..." : "حفظ إعدادات الأقسام"}
             </button>
           </div>
         )}
