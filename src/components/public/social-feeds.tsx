@@ -350,6 +350,25 @@ function StoryViewer({
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose, goNext, goPrev]);
 
+  // Touch swipe support for mobile
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    // Only handle horizontal swipes (not vertical)
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx > 0) goPrev(); // RTL: swipe right = prev
+      else goNext(); // RTL: swipe left = next
+    }
+    touchStartRef.current = null;
+  }, [goNext, goPrev]);
+
   // Prevent body scroll
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -362,27 +381,32 @@ function StoryViewer({
 
   return (
     <div
+      className="story-viewer-overlay"
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 99999,
-        background: "rgba(0,0,0,0.92)",
+        background: "rgba(0,0,0,0.95)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        touchAction: "none",
       }}
       onClick={onClose}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Close button */}
       <button
+        className="story-viewer-close"
         onClick={onClose}
         style={{
           position: "absolute",
           top: 16,
           right: 16,
           zIndex: 3,
-          width: 40,
-          height: 40,
+          width: 44,
+          height: 44,
           borderRadius: "50%",
           border: "none",
           background: "rgba(255,255,255,0.15)",
@@ -646,6 +670,7 @@ function SnapchatStories({ url }: { url: string }) {
         {stories.length > 3 && (
           <>
             <button
+              className="snap-scroll-btn"
               onClick={scrollLeft}
               aria-label="Scroll left"
               style={{
@@ -671,6 +696,7 @@ function SnapchatStories({ url }: { url: string }) {
               &#x2039;
             </button>
             <button
+              className="snap-scroll-btn"
               onClick={scrollRight}
               aria-label="Scroll right"
               style={{
@@ -700,6 +726,7 @@ function SnapchatStories({ url }: { url: string }) {
 
         <div
           ref={scrollRef}
+          className="snap-stories-scroll"
           style={{
             overflowX: "auto",
             display: "flex",
@@ -733,6 +760,7 @@ function SnapchatStories({ url }: { url: string }) {
             stories.map((story, i) => (
               <button
                 key={`story-${i}`}
+                className="snap-story-item"
                 onClick={() => setViewerIndex(i)}
                 style={{
                   flexShrink: 0,
