@@ -31,10 +31,38 @@ interface HighlightGroup {
   snaps: SnapItem[];
 }
 
-/* ─── Twitter / X Embedded Timeline ─── */
+/* ─── Tweet type ─── */
+interface Tweet {
+  id: string;
+  text: string;
+  createdAt: string;
+  user: { name: string; username: string; avatar: string };
+  likes: number;
+  retweets: number;
+  media?: { url: string; type: string }[];
+}
+
+/* ─── Arabic relative time ─── */
+function relativeTimeAr(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffSec = Math.floor((now - then) / 1000);
+  if (diffSec < 60) return "الآن";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} د`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} س`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 30) return `${diffDay} ي`;
+  const diffMon = Math.floor(diffDay / 30);
+  if (diffMon < 12) return `${diffMon} ش`;
+  return `${Math.floor(diffMon / 12)} سنة`;
+}
+
+/* ─── Twitter / X Server-Side Feed ─── */
 function TwitterFeed({ url }: { url: string }) {
-  const embedRef = useRef<HTMLDivElement>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [tweets, setTweets] = useState<Tweet[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const username = url
@@ -43,65 +71,26 @@ function TwitterFeed({ url }: { url: string }) {
     .split("/")[0] || "";
 
   useEffect(() => {
-    if (!username || !embedRef.current) return;
-
-    const createTimeline = () => {
-      const win = window as unknown as Record<string, unknown>;
-      const twttr = win.twttr as {
-        widgets?: {
-          createTimeline: (
-            config: { sourceType: string; screenName: string },
-            el: HTMLElement,
-            options: Record<string, unknown>
-          ) => Promise<HTMLElement>;
-        };
-      } | undefined;
-
-      if (!twttr?.widgets?.createTimeline) {
-        setError(true);
-        return;
-      }
-
-      // Clear any previous embed
-      if (embedRef.current) embedRef.current.innerHTML = "";
-
-      // Use createTimeline API with explicit width to prevent overflow
-      twttr.widgets.createTimeline(
-        { sourceType: "profile", screenName: username },
-        embedRef.current!,
-        {
-          height: 450,
-          theme: "dark",
-          chrome: "noheader nofooter noborders",
-          tweetLimit: 5,
-          dnt: true,
-          width: embedRef.current!.offsetWidth || 300,
-        }
-      ).then(() => {
-        setLoaded(true);
-        // Force iframe max-width after render
-        const iframe = embedRef.current?.querySelector("iframe");
-        if (iframe) {
-          iframe.style.maxWidth = "100%";
-          iframe.style.width = "100%";
-        }
-      }).catch(() => {
-        setError(true);
-      });
-    };
-
-    const existingScript = document.getElementById("twitter-wjs");
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.id = "twitter-wjs";
-      script.src = "https://platform.twitter.com/widgets.js";
-      script.async = true;
-      script.onload = () => setTimeout(createTimeline, 300);
-      script.onerror = () => setError(true);
-      document.body.appendChild(script);
-    } else {
-      setTimeout(createTimeline, 300);
+    if (!username) {
+      setError(true);
+      setLoading(false);
+      return;
     }
+
+    fetch(`/api/twitter?username=${encodeURIComponent(username)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("fetch failed");
+        return res.json();
+      })
+      .then((data) => {
+        if (data.tweets?.length) {
+          setTweets(data.tweets);
+        } else {
+          setError(true);
+        }
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, [username]);
 
   return (
@@ -155,28 +144,80 @@ function TwitterFeed({ url }: { url: string }) {
         </a>
       </div>
 
-      {/* Embedded Timeline */}
+      {/* Tweet List */}
       <div
-        className="twitter-timeline-container"
         style={{
-          overflow: "hidden",
-          maxHeight: 480,
+          maxHeight: 450,
+          overflowY: "auto",
+          padding: "8px 0",
         }}
       >
-        <div
-          ref={embedRef}
-          style={{
-            width: "100%",
-            minHeight: loaded ? 0 : 200,
-            overflow: "hidden",
-          }}
-        />
-        {!loaded && !error && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: "var(--text-secondary)", fontSize: 14 }}>
-            جاري تحميل التغريدات...
-          </div>
-        )}
-        {error && (
+        {/* Loading skeleton */}
+        {loading &&
+          [0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                padding: "16px 20px",
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    background: "var(--bg-primary)",
+                    animation: "pulse 1.5s ease-in-out infinite",
+                  }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      width: "40%",
+                      height: 12,
+                      borderRadius: 4,
+                      background: "var(--bg-primary)",
+                      marginBottom: 6,
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: "25%",
+                      height: 10,
+                      borderRadius: 4,
+                      background: "var(--bg-primary)",
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    }}
+                  />
+                </div>
+              </div>
+              <div
+                style={{
+                  width: "90%",
+                  height: 12,
+                  borderRadius: 4,
+                  background: "var(--bg-primary)",
+                  marginBottom: 6,
+                  animation: "pulse 1.5s ease-in-out infinite",
+                }}
+              />
+              <div
+                style={{
+                  width: "70%",
+                  height: 12,
+                  borderRadius: 4,
+                  background: "var(--bg-primary)",
+                  animation: "pulse 1.5s ease-in-out infinite",
+                }}
+              />
+            </div>
+          ))}
+
+        {/* Error state */}
+        {!loading && error && (
           <div style={{ padding: 24, textAlign: "center" }}>
             <a
               href={url}
@@ -193,7 +234,184 @@ function TwitterFeed({ url }: { url: string }) {
             </a>
           </div>
         )}
+
+        {/* Tweet cards */}
+        {!loading &&
+          tweets.map((tweet) => (
+            <a
+              key={tweet.id}
+              href={`https://x.com/${tweet.user.username}/status/${tweet.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "block",
+                padding: "14px 20px",
+                borderBottom: "1px solid var(--border)",
+                textDecoration: "none",
+                color: "inherit",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "rgba(255,255,255,0.03)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "transparent")
+              }
+            >
+              {/* User row */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 8,
+                }}
+              >
+                {tweet.user.avatar ? (
+                  <img
+                    src={tweet.user.avatar}
+                    alt=""
+                    width={36}
+                    height={36}
+                    style={{
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      flexShrink: 0,
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: "var(--bg-primary)",
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <span
+                    style={{
+                      color: "var(--text-primary)",
+                      fontWeight: 600,
+                      fontSize: 14,
+                      fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+                    }}
+                  >
+                    {tweet.user.name}
+                  </span>{" "}
+                  <span
+                    style={{
+                      color: "var(--text-secondary)",
+                      fontSize: 13,
+                      fontFamily: "'IBM Plex Mono', monospace",
+                    }}
+                  >
+                    @{tweet.user.username}
+                  </span>{" "}
+                  <span
+                    style={{
+                      color: "var(--text-secondary)",
+                      fontSize: 12,
+                    }}
+                  >
+                    &middot; {relativeTimeAr(tweet.createdAt)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tweet text */}
+              <p
+                dir="auto"
+                style={{
+                  margin: 0,
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  color: "var(--text-primary)",
+                  fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                }}
+              >
+                {tweet.text}
+              </p>
+
+              {/* Media */}
+              {tweet.media?.[0] && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <img
+                    src={tweet.media[0].url}
+                    alt=""
+                    style={{
+                      width: "100%",
+                      maxHeight: 220,
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Engagement */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 20,
+                  marginTop: 10,
+                  color: "var(--text-secondary)",
+                  fontSize: 13,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                  {tweet.likes > 0 ? tweet.likes.toLocaleString() : ""}
+                </span>
+                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path d="M17 1l4 4-4 4" />
+                    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                    <path d="M7 23l-4-4 4-4" />
+                    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                  </svg>
+                  {tweet.retweets > 0 ? tweet.retweets.toLocaleString() : ""}
+                </span>
+              </div>
+            </a>
+          ))}
       </div>
+
+      {/* Pulse animation keyframes */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.15; }
+        }
+      `}</style>
     </div>
   );
 }
