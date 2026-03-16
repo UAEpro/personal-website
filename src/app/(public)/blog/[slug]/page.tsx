@@ -9,6 +9,7 @@ import BlogContentStyles from "@/components/public/blog-content-styles";
 import type { Metadata } from "next";
 
 export const revalidate = 60;
+export const dynamicParams = true;
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -149,7 +150,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             display: "inline-block",
             fontSize: 13,
             color: "var(--accent)",
-            background: "rgba(249, 115, 22, 0.1)",
+            background: "color-mix(in srgb, var(--accent) 15%, transparent)",
             padding: "4px 12px",
             borderRadius: 4,
             fontWeight: 600,
