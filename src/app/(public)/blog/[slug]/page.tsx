@@ -11,6 +11,8 @@ import ReadingProgress from "@/components/public/reading-progress";
 import TableOfContents from "@/components/public/table-of-contents";
 import FloatingShare from "@/components/public/floating-share";
 import { addHeadingIds } from "@/lib/heading-ids";
+import ViewCounter from "@/components/public/view-counter";
+import PostReactions from "@/components/public/post-reactions";
 
 export const dynamic = "force-dynamic";
 
@@ -227,6 +229,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         {post.author?.name && <span>{post.author.name}</span>}
         <span>{post.readingTime} دقائق قراءة</span>
         <span>{formatDate(post.publishedAt)}</span>
+        <ViewCounter postId={post.id} initialCount={post.viewCount} />
       </div>
 
       {/* Tags */}
@@ -281,6 +284,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           شارك هذه المقالة:
         </p>
         <ShareButtons url={postUrl} title={post.title} />
+      </div>
+
+      {/* Reactions */}
+      <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+        <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 12 }}>ما رأيك في هذه المقالة؟</p>
+        <PostReactions postId={post.id} />
       </div>
 
       {/* Comments */}

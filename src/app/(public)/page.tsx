@@ -6,6 +6,7 @@ import SocialFeeds from "@/components/public/social-feeds";
 import Link from "next/link";
 import Image from "next/image";
 import ScrollAnimator from "@/components/public/scroll-animator";
+import NewsletterForm from "@/components/public/newsletter-form";
 
 export const dynamic = "force-dynamic";
 
@@ -442,7 +443,15 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 8. Contact Form */}
+      {/* 8. Newsletter */}
+      <section className={sectionClassName} style={sectionStyle}>
+        <SectionHeading title="النشرة البريدية" />
+        <div style={{ maxWidth: 500 }}>
+          <NewsletterForm />
+        </div>
+      </section>
+
+      {/* 9. Contact Form */}
       <section id="contact" className={sectionClassName} style={sectionStyle}>
         <SectionHeading title="تواصل معي" />
         <ContactForm />

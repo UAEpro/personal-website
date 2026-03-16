@@ -20,6 +20,7 @@ enum PostStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+  SCHEDULED
 }
 
 model Post {
@@ -41,8 +42,11 @@ model Post {
   publishedAt    DateTime?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
+  scheduledAt    DateTime?
+  viewCount      Int        @default(0)
   tags           PostTag[]
   comments       Comment[]
+  reactions      Reaction[]
   @@index([status])
   @@index([slug])
   @@index([categoryId])
@@ -134,6 +138,26 @@ model ContactMessage {
   message   String   @db.Text
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Reaction {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  emoji     String
+  sessionId String
+  createdAt DateTime @default(now())
+  @@unique([postId, emoji, sessionId])
+  @@index([postId])
+}
+
+model Subscriber {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  isConfirmed  Boolean  @default(false)
+  confirmToken String?  @unique
+  unsubToken   String   @unique
+  subscribedAt DateTime @default(now())
 }
 
 model SiteSettings {
