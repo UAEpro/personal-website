@@ -104,6 +104,14 @@ img, video, iframe, pre, table {
   color: var(--text-primary) !important;
 }
 
+/* ─── Twitter embed overflow fix ─── */
+.twitter-timeline-container {
+  overflow: hidden !important;
+}
+.twitter-timeline-container iframe {
+  max-width: 100% !important;
+}
+
 /* ─── Animations ─── */
 @keyframes blink {
   0%, 50% { opacity: 1; }

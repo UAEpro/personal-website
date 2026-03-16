@@ -42,7 +42,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="antialiased">
-        <Providers>{children}</Providers>
+        <div style={{ overflowX: "hidden", width: "100%", position: "relative" }}>
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );
