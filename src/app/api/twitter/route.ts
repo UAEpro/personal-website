@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     const nextData = JSON.parse(match[1]);
     const entries = nextData?.props?.pageProps?.timeline?.entries ?? [];
 
-    const tweets: TweetData[] = [];
+    let tweets: TweetData[] = [];
 
     for (const entry of entries) {
       if (entry.type !== "tweet" || !entry.content?.tweet) continue;
@@ -100,8 +100,11 @@ export async function GET(req: NextRequest) {
         ...(media.length > 0 ? { media } : {}),
       });
 
-      if (tweets.length >= 10) break;
     }
+
+    // Sort by date (newest first) — syndication returns by popularity
+    tweets.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    tweets = tweets.slice(0, 10);
 
     // Update cache
     cache[key] = { tweets, fetchedAt: Date.now() };
