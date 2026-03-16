@@ -35,6 +35,8 @@ yarn-error.log*
 
 # project-specific
 .superpowers/
+/uploads/
+/public/uploads/
 
 # vercel
 .vercel
