@@ -30,26 +30,61 @@ interface HighlightGroup {
 
 /* ─── Twitter / X Embedded Timeline ─── */
 function TwitterFeed({ url }: { url: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const embedRef = useRef<HTMLDivElement>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
 
-  // Extract username from x.com or twitter.com URLs
   const username = url
     .replace(/\/$/, "")
     .replace(/https?:\/\/(www\.)?(x\.com|twitter\.com)\/?/, "")
     .split("/")[0] || "";
 
   useEffect(() => {
-    if (!username) return;
+    if (!username || !embedRef.current) return;
 
-    const loadWidgets = () => {
+    const createTimeline = () => {
       const win = window as unknown as Record<string, unknown>;
-      if (win.twttr) {
-        const twttr = win.twttr as { widgets?: { load: (el?: HTMLElement) => void } };
-        // Small delay to ensure DOM is ready
-        setTimeout(() => {
-          twttr.widgets?.load(containerRef.current || undefined);
-        }, 300);
+      const twttr = win.twttr as {
+        widgets?: {
+          createTimeline: (
+            config: { sourceType: string; screenName: string },
+            el: HTMLElement,
+            options: Record<string, unknown>
+          ) => Promise<HTMLElement>;
+        };
+      } | undefined;
+
+      if (!twttr?.widgets?.createTimeline) {
+        setError(true);
+        return;
       }
+
+      // Clear any previous embed
+      if (embedRef.current) embedRef.current.innerHTML = "";
+
+      // Use createTimeline API with explicit width to prevent overflow
+      twttr.widgets.createTimeline(
+        { sourceType: "profile", screenName: username },
+        embedRef.current!,
+        {
+          height: 450,
+          theme: "dark",
+          chrome: "noheader nofooter noborders",
+          tweetLimit: 5,
+          dnt: true,
+          width: embedRef.current!.offsetWidth || 300,
+        }
+      ).then(() => {
+        setLoaded(true);
+        // Force iframe max-width after render
+        const iframe = embedRef.current?.querySelector("iframe");
+        if (iframe) {
+          iframe.style.maxWidth = "100%";
+          iframe.style.width = "100%";
+        }
+      }).catch(() => {
+        setError(true);
+      });
     };
 
     const existingScript = document.getElementById("twitter-wjs");
@@ -58,14 +93,11 @@ function TwitterFeed({ url }: { url: string }) {
       script.id = "twitter-wjs";
       script.src = "https://platform.twitter.com/widgets.js";
       script.async = true;
-      script.onload = () => {
-        // Wait for twttr to be ready
-        setTimeout(loadWidgets, 500);
-      };
+      script.onload = () => setTimeout(createTimeline, 300);
+      script.onerror = () => setError(true);
       document.body.appendChild(script);
     } else {
-      // Script already exists, just reload widgets
-      loadWidgets();
+      setTimeout(createTimeline, 300);
     }
   }, [username]);
 
@@ -122,37 +154,42 @@ function TwitterFeed({ url }: { url: string }) {
 
       {/* Embedded Timeline */}
       <div
-        ref={containerRef}
         className="twitter-timeline-container"
         style={{
-          padding: "0 4px",
-          minHeight: 400,
-          maxHeight: 500,
-          overflowY: "auto",
+          overflow: "hidden",
+          maxHeight: 480,
         }}
       >
-        <a
-          className="twitter-timeline"
-          data-height="480"
-          data-theme="dark"
-          data-chrome="noheader nofooter noborders"
-          data-tweet-limit="3"
-          href={`https://twitter.com/${username}`}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: 200,
-              color: "var(--text-secondary)",
-              fontSize: 14,
-              fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
-            }}
-          >
+        <div
+          ref={embedRef}
+          style={{
+            width: "100%",
+            minHeight: loaded ? 0 : 200,
+            overflow: "hidden",
+          }}
+        />
+        {!loaded && !error && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: "var(--text-secondary)", fontSize: 14 }}>
             جاري تحميل التغريدات...
           </div>
-        </a>
+        )}
+        {error && (
+          <div style={{ padding: 24, textAlign: "center" }}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "var(--accent)",
+                textDecoration: "none",
+                fontSize: 14,
+                fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+              }}
+            >
+              عرض التغريدات على X &#x2197;
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
