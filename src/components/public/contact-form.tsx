@@ -102,6 +102,7 @@ export default function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
+      className="contact-form"
       style={{
         maxWidth: 600,
         margin: "0 auto",

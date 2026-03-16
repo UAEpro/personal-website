@@ -98,6 +98,7 @@ export default async function LinksPage() {
               </h2>
 
               <div
+                className="responsive-grid-links"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",

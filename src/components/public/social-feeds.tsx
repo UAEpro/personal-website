@@ -126,6 +126,7 @@ function TwitterFeed({ url }: { url: string }) {
       {/* Embedded Timeline */}
       <div
         ref={containerRef}
+        className="twitter-timeline-container"
         style={{
           padding: "0 4px",
           minHeight: 400,
@@ -415,6 +416,7 @@ function StoryViewer({
       {/* Prev button */}
       {currentIndex > 0 && (
         <button
+          className="story-viewer-nav"
           onClick={(e) => {
             e.stopPropagation();
             goPrev();
@@ -445,6 +447,7 @@ function StoryViewer({
       {/* Next button */}
       {currentIndex < stories.length - 1 && (
         <button
+          className="story-viewer-nav"
           onClick={(e) => {
             e.stopPropagation();
             goNext();
@@ -474,6 +477,7 @@ function StoryViewer({
 
       {/* Content */}
       <div
+        className="story-viewer-content"
         onClick={(e) => e.stopPropagation()}
         style={{
           maxWidth: "90vw",
@@ -962,6 +966,7 @@ export default function SocialFeeds({ toggles, links }: SocialFeedsProps) {
   return (
     <>
       <div
+        className="social-feeds-grid"
         style={{
           display: "grid",
           gridTemplateColumns:
@@ -987,22 +992,7 @@ export default function SocialFeeds({ toggles, links }: SocialFeedsProps) {
         )}
       </div>
 
-      {/* Responsive grid override for mobile */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            @media (max-width: 900px) {
-              /* Force single column on tablets */
-              div[style*="grid-template-columns: repeat(3"] {
-                grid-template-columns: 1fr !important;
-              }
-              div[style*="grid-template-columns: repeat(2"] {
-                grid-template-columns: 1fr !important;
-              }
-            }
-          `,
-        }}
-      />
+      {/* Responsive handled by .social-feeds-grid in globals.css */}
     </>
   );
 }

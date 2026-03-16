@@ -109,6 +109,8 @@ export default async function HomePage() {
     padding: "64px 24px",
   };
 
+  const sectionClassName = "section-container";
+
   const hasAnySocialToggle = socialToggles.x || socialToggles.instagram || socialToggles.snapchat;
 
   return (
@@ -118,7 +120,7 @@ export default async function HomePage() {
 
       {/* 2. About Me */}
       {aboutContent && (
-        <section style={sectionStyle}>
+        <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="عني" />
           <div
             style={{
@@ -137,9 +139,10 @@ export default async function HomePage() {
 
       {/* 3. Latest Blog Posts */}
       {posts.length > 0 && (
-        <section style={sectionStyle}>
+        <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="آخر المقالات" />
           <div
+            className="responsive-grid-posts"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
@@ -235,7 +238,7 @@ export default async function HomePage() {
 
       {/* 4. Social Feeds */}
       {hasAnySocialToggle && (
-        <section style={sectionStyle}>
+        <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="تابعني" />
           <SocialFeeds toggles={socialToggles} links={socialLinks} />
         </section>
@@ -243,9 +246,10 @@ export default async function HomePage() {
 
       {/* 5. Projects */}
       {projects.length > 0 && (
-        <section style={sectionStyle}>
+        <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="المشاريع" />
           <div
+            className="responsive-grid-projects"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
@@ -324,7 +328,7 @@ export default async function HomePage() {
 
       {/* 6. Skills */}
       {skills.length > 0 && (
-        <section style={sectionStyle}>
+        <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="المهارات" />
           <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
             {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
@@ -370,9 +374,10 @@ export default async function HomePage() {
 
       {/* 7. Links / Services */}
       {links.length > 0 && (
-        <section style={sectionStyle}>
+        <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="روابط وخدمات" />
           <div
+            className="responsive-grid-links"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
@@ -430,7 +435,7 @@ export default async function HomePage() {
       )}
 
       {/* 8. Contact Form */}
-      <section id="contact" style={sectionStyle}>
+      <section id="contact" className={sectionClassName} style={sectionStyle}>
         <SectionHeading title="تواصل معي" />
         <ContactForm />
       </section>

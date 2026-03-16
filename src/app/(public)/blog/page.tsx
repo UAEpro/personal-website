@@ -144,7 +144,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
       {/* Category Filter Chips */}
       {categories.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 32 }}>
+        <div className="filter-chips" style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 32 }}>
           <Link
             href={buildUrl({ category: null, page: null })}
             style={{
@@ -229,6 +229,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       {/* Posts Grid */}
       {posts.length > 0 ? (
         <div
+          className="responsive-grid-posts"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
@@ -341,11 +342,13 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div
+          className="pagination-container"
           style={{
             display: "flex",
             justifyContent: "center",
             gap: 8,
             marginTop: 48,
+            flexWrap: "wrap",
           }}
         >
           {page > 1 && (

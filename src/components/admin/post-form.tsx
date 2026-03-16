@@ -277,7 +277,7 @@ export default function PostForm({ post, categories, tags }: PostFormProps) {
   }, []);
 
   return (
-    <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+    <div className="post-form-layout" style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
       {/* Main area */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Title input */}
@@ -301,6 +301,7 @@ export default function PostForm({ post, categories, tags }: PostFormProps) {
 
       {/* Side panel */}
       <div
+        className="post-form-sidebar"
         style={{
           width: 300,
           flexShrink: 0,

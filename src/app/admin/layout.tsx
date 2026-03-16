@@ -8,9 +8,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session) redirect("/login");
 
   return (
-    <div dir="rtl" style={{ display: "flex", minHeight: "100vh", background: "var(--bg-primary)" }}>
+    <div dir="rtl" className="admin-layout" style={{ display: "flex", minHeight: "100vh", background: "var(--bg-primary)" }}>
       <Sidebar />
-      <main style={{ flex: 1, padding: 32, overflowY: "auto", maxHeight: "100vh" }}>
+      <main className="admin-main" style={{ flex: 1, padding: 32, overflowY: "auto", maxHeight: "100vh" }}>
         {children}
       </main>
     </div>

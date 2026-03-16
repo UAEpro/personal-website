@@ -9,7 +9,7 @@ interface HeroProps {
 export default function Hero({ tagline }: HeroProps) {
   return (
     <section
-      className="dot-grid"
+      className="dot-grid hero-section"
       style={{
         minHeight: "80vh",
         display: "flex",

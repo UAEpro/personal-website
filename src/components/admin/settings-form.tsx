@@ -180,6 +180,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
     <div>
       {/* Tabs */}
       <div
+        className="settings-tabs"
         style={{
           display: "flex",
           gap: 0,
@@ -224,6 +225,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       )}
 
       <div
+        className="settings-content"
         style={{
           background: "var(--bg-secondary)",
           border: "1px solid var(--border)",
@@ -237,7 +239,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
             <h3 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 16 }}>
               المظاهر
             </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
+            <div className="theme-presets-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
               {themePresetsList.map((preset) => (
                 <button
                   key={preset.id}

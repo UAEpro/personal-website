@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -18,6 +19,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
@@ -26,6 +28,7 @@ export default function Sidebar() {
 
   return (
     <aside
+      className="admin-sidebar"
       style={{
         width: 240,
         minHeight: "100vh",
@@ -42,29 +45,72 @@ export default function Sidebar() {
           padding: "0 20px 20px",
           borderBottom: "1px solid var(--border)",
           marginBottom: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        <Link
-          href="/admin"
+        <div>
+          <Link
+            href="/admin"
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: "var(--accent)",
+              textDecoration: "none",
+            }}
+          >
+            UAEpro
+          </Link>
+          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>
+            لوحة الإدارة
+          </div>
+        </div>
+
+        {/* Mobile hamburger toggle */}
+        <button
+          className="admin-sidebar-toggle"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="القائمة"
           style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: "var(--accent)",
-            textDecoration: "none",
+            display: "none",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 8,
           }}
         >
-          UAEpro
-        </Link>
-        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>
-          لوحة الإدارة
-        </div>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--text-primary)"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            {mobileOpen ? (
+              <>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </>
+            )}
+          </svg>
+        </button>
       </div>
 
-      <nav style={{ flex: 1, padding: "8px 0" }}>
+      <nav className={`admin-sidebar-nav${mobileOpen ? " open" : ""}`} style={{ flex: 1, padding: "8px 0" }}>
         {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
+            onClick={() => setMobileOpen(false)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -85,6 +131,7 @@ export default function Sidebar() {
       </nav>
 
       <div
+        className={`admin-sidebar-footer${mobileOpen ? " open" : ""}`}
         style={{
           padding: "12px 20px",
           borderTop: "1px solid var(--border)",

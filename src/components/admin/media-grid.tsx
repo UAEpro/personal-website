@@ -118,6 +118,7 @@ export default function MediaGrid({ media }: { media: MediaItem[] }) {
 
       {/* Media grid */}
       <div
+        className="media-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",

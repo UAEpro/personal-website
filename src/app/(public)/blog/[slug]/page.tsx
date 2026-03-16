@@ -118,7 +118,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }));
 
   return (
-    <article style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px" }}>
+    <article className="blog-post-article" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px" }}>
       {/* Cover Image */}
       {post.coverImage && (
         <div

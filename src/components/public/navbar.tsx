@@ -121,36 +121,39 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Menu */}
-      {menuOpen && (
-        <div
-          className="nav-mobile-menu"
-          style={{
-            borderTop: "1px solid var(--border)",
-            background: "var(--bg-secondary)",
-            padding: "16px 24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                color: "var(--text-secondary)",
-                textDecoration: "none",
-                fontSize: 16,
-                fontWeight: 500,
-                padding: "8px 0",
-              }}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      )}
+      <div
+        className="nav-mobile-menu"
+        style={{
+          borderTop: "1px solid var(--border)",
+          background: "var(--bg-secondary)",
+          padding: menuOpen ? "16px 24px" : "0 24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: menuOpen ? 16 : 0,
+          maxHeight: menuOpen ? 400 : 0,
+          overflow: "hidden",
+          transition: "max-height 0.3s ease, padding 0.3s ease, gap 0.3s ease",
+        }}
+      >
+        {navLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={() => setMenuOpen(false)}
+            style={{
+              color: "var(--text-secondary)",
+              textDecoration: "none",
+              fontSize: 16,
+              fontWeight: 500,
+              padding: "8px 0",
+              opacity: menuOpen ? 1 : 0,
+              transition: "opacity 0.2s ease",
+            }}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
 
       <style jsx global>{`
         @media (max-width: 768px) {
@@ -164,6 +167,7 @@ export default function Navbar() {
         @media (min-width: 769px) {
           .nav-mobile-menu {
             display: none !important;
+            max-height: 0 !important;
           }
         }
       `}</style>

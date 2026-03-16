@@ -79,3 +79,190 @@ body {
 .footer-social-link:hover {
   color: var(--text-primary) !important;
 }
+
+/* ─── Mobile Responsive Utilities ─── */
+
+/* Hero section mobile */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 60vh !important;
+    padding: 48px 16px !important;
+  }
+  .terminal-window {
+    margin-bottom: 24px !important;
+  }
+}
+
+/* Responsive grids - auto-fill grids with minmax */
+@media (max-width: 768px) {
+  .responsive-grid-posts,
+  .responsive-grid-projects,
+  .responsive-grid-links {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .responsive-grid-posts,
+  .responsive-grid-projects,
+  .responsive-grid-links {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Social feeds grid */
+@media (max-width: 768px) {
+  .social-feeds-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .twitter-timeline-container {
+    max-height: 400px !important;
+  }
+}
+
+/* Contact form full width on mobile */
+@media (max-width: 768px) {
+  .contact-form {
+    max-width: 100% !important;
+  }
+}
+
+/* Blog post page mobile */
+@media (max-width: 768px) {
+  .blog-post-article {
+    padding: 24px 16px !important;
+  }
+}
+
+/* Section padding mobile */
+@media (max-width: 768px) {
+  .section-container {
+    padding: 32px 16px !important;
+  }
+}
+
+/* Admin sidebar mobile */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column !important;
+  }
+  .admin-sidebar {
+    width: 100% !important;
+    min-height: auto !important;
+    border-left: none !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  .admin-sidebar-nav {
+    display: none !important;
+  }
+  .admin-sidebar-nav.open {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .admin-sidebar-footer {
+    display: none !important;
+  }
+  .admin-sidebar-footer.open {
+    display: flex !important;
+  }
+  .admin-sidebar-toggle {
+    display: flex !important;
+  }
+  .admin-main {
+    max-height: none !important;
+    padding: 16px !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .admin-sidebar-toggle {
+    display: none !important;
+  }
+}
+
+/* Post form mobile - side panel stacks below */
+@media (max-width: 900px) {
+  .post-form-layout {
+    flex-direction: column !important;
+  }
+  .post-form-sidebar {
+    width: 100% !important;
+  }
+}
+
+/* Media grid responsive */
+@media (max-width: 600px) {
+  .media-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  .media-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Settings tabs horizontal scroll on mobile */
+@media (max-width: 768px) {
+  .settings-tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap !important;
+  }
+  .settings-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .settings-tabs button {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .settings-content {
+    padding: 16px !important;
+  }
+}
+
+/* Pagination touch-friendly */
+@media (max-width: 768px) {
+  .pagination-container a,
+  .pagination-container button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
+/* Story viewer full-screen on mobile */
+@media (max-width: 768px) {
+  .story-viewer-content video,
+  .story-viewer-content img {
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+  }
+  .story-viewer-nav {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+/* Blog filter chips wrapping */
+@media (max-width: 768px) {
+  .filter-chips {
+    gap: 8px !important;
+  }
+  .filter-chips a {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Theme grid on settings page */
+@media (max-width: 768px) {
+  .theme-presets-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
