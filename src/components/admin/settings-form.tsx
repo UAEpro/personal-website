@@ -98,8 +98,20 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
   const [heroTagline, setHeroTagline] = useState(settings.heroTagline || "");
   const [aboutContent, setAboutContent] = useState(settings.aboutContent || "");
 
-  // API state
-  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  // API state — persist key in localStorage so it survives page refresh
+  const [generatedKey, setGeneratedKey] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("uaepro_api_key");
+    }
+    return null;
+  });
+
+  const saveGeneratedKey = (key: string) => {
+    setGeneratedKey(key);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("uaepro_api_key", key);
+    }
+  };
 
   // Skill tab state
   const [skillCopied, setSkillCopied] = useState(false);
@@ -147,7 +159,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       if (!result.success) throw new Error(result.error);
 
       if (result.data?.apiKey) {
-        setGeneratedKey(result.data.apiKey);
+        saveGeneratedKey(result.data.apiKey);
       }
 
       setMessage("تم الحفظ بنجاح");

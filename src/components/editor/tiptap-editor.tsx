@@ -62,6 +62,8 @@ function ToolbarButton({
 
 export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   const [uploading, setUploading] = useState(false);
+  const [sourceMode, setSourceMode] = useState(false);
+  const [sourceHtml, setSourceHtml] = useState("");
 
   const uploadAndInsertImage = useCallback(async (file: File, view: EditorView) => {
     setUploading(true);
@@ -87,7 +89,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4] },
-        codeBlock: false,
+        codeBlock: {},
         horizontalRule: {},
       }),
       Image.configure({ inline: false }),
@@ -136,7 +138,6 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
     if (editor && content && editor.getHTML() !== content) {
       editor.commands.setContent(content);
     }
-    // Only run when content prop changes from outside
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content]);
 
@@ -153,6 +154,24 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       editor.chain().focus().setLink({ href: url }).run();
     }
   }, [editor]);
+
+  // Toggle source mode
+  const toggleSource = useCallback(() => {
+    if (sourceMode) {
+      // Switching back to WYSIWYG — apply the HTML
+      if (editor) {
+        editor.commands.setContent(sourceHtml);
+        onChange(sourceHtml);
+      }
+      setSourceMode(false);
+    } else {
+      // Switching to source — capture current HTML
+      if (editor) {
+        setSourceHtml(editor.getHTML());
+      }
+      setSourceMode(true);
+    }
+  }, [sourceMode, sourceHtml, editor, onChange]);
 
   if (!editor) return null;
 
@@ -174,156 +193,55 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           padding: "8px 12px",
           background: "var(--bg-secondary)",
           borderBottom: "1px solid var(--border)",
+          alignItems: "center",
         }}
       >
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 1 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          title="H1"
-        >
-          H1
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 2 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          title="H2"
-        >
-          H2
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 3 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          title="H3"
-        >
-          H3
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 4 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-          title="H4"
-        >
-          H4
-        </ToolbarButton>
+        {!sourceMode && (
+          <>
+            <ToolbarButton active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} title="H1">H1</ToolbarButton>
+            <ToolbarButton active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="H2">H2</ToolbarButton>
+            <ToolbarButton active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="H3">H3</ToolbarButton>
+            <ToolbarButton active={editor.isActive("heading", { level: 4 })} onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} title="H4">H4</ToolbarButton>
 
-        <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
+            <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
 
-        <ToolbarButton
-          active={editor.isActive("bold")}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          title="غامق"
-        >
-          <strong>B</strong>
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("italic")}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          title="مائل"
-        >
-          <em>I</em>
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("underline")}
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          title="تسطير"
-        >
-          <u>U</u>
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("strike")}
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          title="يتوسطه خط"
-        >
-          <s>S</s>
-        </ToolbarButton>
+            <ToolbarButton active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} title="غامق"><strong>B</strong></ToolbarButton>
+            <ToolbarButton active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} title="مائل"><em>I</em></ToolbarButton>
+            <ToolbarButton active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()} title="تسطير"><u>U</u></ToolbarButton>
+            <ToolbarButton active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()} title="يتوسطه خط"><s>S</s></ToolbarButton>
 
-        <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
+            <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
 
-        <ToolbarButton
-          active={editor.isActive("bulletList")}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          title="قائمة نقطية"
-        >
-          •
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("orderedList")}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          title="قائمة مرقمة"
-        >
-          1.
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("blockquote")}
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          title="اقتباس"
-        >
-          &ldquo;
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("codeBlock")}
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          title="كود"
-        >
-          {"</>"}
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          title="خط فاصل"
-        >
-          ―
-        </ToolbarButton>
+            <ToolbarButton active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} title="قائمة نقطية">•</ToolbarButton>
+            <ToolbarButton active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="قائمة مرقمة">1.</ToolbarButton>
+            <ToolbarButton active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="اقتباس">&ldquo;</ToolbarButton>
+            <ToolbarButton active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()} title="كود">{"</>"}</ToolbarButton>
+            <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="خط فاصل">―</ToolbarButton>
 
-        <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
+            <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
 
-        <ToolbarButton onClick={insertImage} title="إدراج صورة">
-          IMG
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("link")}
-          onClick={insertLink}
-          title="رابط"
-        >
-          🔗
-        </ToolbarButton>
+            <ToolbarButton onClick={insertImage} title="إدراج صورة">IMG</ToolbarButton>
+            <ToolbarButton active={editor.isActive("link")} onClick={insertLink} title="رابط">🔗</ToolbarButton>
 
-        <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
+            <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
 
-        <ToolbarButton
-          active={editor.isActive({ textAlign: "right" })}
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          title="محاذاة يمين"
-        >
-          ≡→
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive({ textAlign: "center" })}
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          title="توسيط"
-        >
-          ≡
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive({ textAlign: "left" })}
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          title="محاذاة يسار"
-        >
-          ←≡
-        </ToolbarButton>
+            <ToolbarButton active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()} title="محاذاة يمين">≡→</ToolbarButton>
+            <ToolbarButton active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()} title="توسيط">≡</ToolbarButton>
+            <ToolbarButton active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()} title="محاذاة يسار">←≡</ToolbarButton>
 
-        <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
+            <span style={{ width: 1, background: "var(--border)", margin: "0 4px" }} />
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          title="تراجع"
-        >
-          ↶
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          title="إعادة"
-        >
-          ↷
-        </ToolbarButton>
+            <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="تراجع">↶</ToolbarButton>
+            <ToolbarButton onClick={() => editor.chain().focus().redo().run()} title="إعادة">↷</ToolbarButton>
+          </>
+        )}
+
+        {/* Source toggle — always visible */}
+        <div style={{ marginInlineStart: sourceMode ? 0 : "auto" }}>
+          <ToolbarButton active={sourceMode} onClick={toggleSource} title="عرض الكود المصدري">
+            {sourceMode ? "عرض عادي" : "HTML"}
+          </ToolbarButton>
+        </div>
       </div>
 
       {/* Uploading indicator */}
@@ -342,8 +260,33 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         </div>
       )}
 
-      {/* Editor content */}
-      <EditorContent editor={editor} />
+      {/* Editor content or Source code */}
+      {sourceMode ? (
+        <textarea
+          value={sourceHtml}
+          onChange={(e) => {
+            setSourceHtml(e.target.value);
+            onChange(e.target.value);
+          }}
+          dir="ltr"
+          style={{
+            width: "100%",
+            minHeight: 400,
+            padding: 20,
+            background: "var(--bg-terminal)",
+            color: "#a6e3a1",
+            border: "none",
+            outline: "none",
+            fontFamily: "'IBM Plex Mono', Monaco, monospace",
+            fontSize: 13,
+            lineHeight: 1.6,
+            resize: "vertical",
+            boxSizing: "border-box",
+          }}
+        />
+      ) : (
+        <EditorContent editor={editor} />
+      )}
     </div>
   );
 }
