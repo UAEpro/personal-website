@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
+@layer base {
+  html {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+  }
+  body {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  *, *::before, *::after {
+    max-width: 100vw;
+  }
 }
 
 :root {
@@ -25,6 +35,15 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+main, nav, footer, section, .arabic-content {
+  overflow-x: hidden;
+}
+
+img, video, iframe, pre, table {
+  max-width: 100%;
 }
 
 .dot-grid {
@@ -274,13 +293,13 @@ body {
     padding: 0 !important;
   }
   .story-viewer-content {
-    width: 100vw !important;
+    width: 100% !important;
     height: 100vh !important;
     border-radius: 0 !important;
   }
   .story-viewer-content video,
   .story-viewer-content img {
-    max-width: 100vw !important;
+    max-width: 100% !important;
     max-height: 100vh !important;
     width: 100% !important;
     height: 100% !important;
