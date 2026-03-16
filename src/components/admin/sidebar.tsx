@@ -13,6 +13,7 @@ const navItems = [
   { href: "/admin/projects", label: "المشاريع", icon: "⬡" },
   { href: "/admin/skills", label: "المهارات", icon: "◈" },
   { href: "/admin/messages", label: "الرسائل", icon: "✉" },
+  { href: "/admin/subscribers", label: "المشتركين", icon: "☰" },
   { href: "/admin/links", label: "الروابط", icon: "⊙" },
   { href: "/admin/settings", label: "الإعدادات", icon: "⚙" },
 ];

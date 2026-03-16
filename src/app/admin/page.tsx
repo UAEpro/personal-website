@@ -2,13 +2,16 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 
 async function getDashboardData() {
-  const [totalPosts, publishedPosts, draftPosts, pendingComments, unreadMessages, recentPosts] =
+  const [totalPosts, publishedPosts, draftPosts, scheduledPosts, pendingComments, unreadMessages, totalViews, subscriberCount, recentPosts] =
     await Promise.all([
       prisma.post.count(),
       prisma.post.count({ where: { status: "PUBLISHED" } }),
       prisma.post.count({ where: { status: "DRAFT" } }),
+      prisma.post.count({ where: { status: "SCHEDULED" } }),
       prisma.comment.count({ where: { isApproved: false } }),
       prisma.contactMessage.count({ where: { isRead: false } }),
+      prisma.post.aggregate({ _sum: { viewCount: true } }),
+      prisma.subscriber.count(),
       prisma.post.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -19,7 +22,7 @@ async function getDashboardData() {
       }),
     ]);
 
-  return { totalPosts, publishedPosts, draftPosts, pendingComments, unreadMessages, recentPosts };
+  return { totalPosts, publishedPosts, draftPosts, scheduledPosts, pendingComments, unreadMessages, totalViews: totalViews._sum.viewCount || 0, subscriberCount, recentPosts };
 }
 
 const cardStyle: React.CSSProperties = {
@@ -101,10 +104,22 @@ export default async function AdminDashboard() {
           <span style={{ ...statValue, color: "#f59e0b" }}>{data.draftPosts}</span>
         </div>
         <div style={cardStyle}>
+          <span style={statLabel}>مجدولة</span>
+          <span style={{ ...statValue, color: "#3b82f6" }}>{data.scheduledPosts}</span>
+        </div>
+        <div style={cardStyle}>
           <span style={statLabel}>تعليقات معلقة</span>
           <span style={{ ...statValue, color: data.pendingComments > 0 ? "#ef4444" : "var(--text-primary)" }}>
             {data.pendingComments}
           </span>
+        </div>
+        <div style={cardStyle}>
+          <span style={statLabel}>مشاهدات</span>
+          <span style={statValue}>{data.totalViews}</span>
+        </div>
+        <div style={cardStyle}>
+          <span style={statLabel}>مشتركين</span>
+          <span style={{ ...statValue, color: "#06b6d4" }}>{data.subscriberCount}</span>
         </div>
       </div>
 
@@ -251,11 +266,13 @@ function StatusBadge({ status }: { status: string }) {
     PUBLISHED: { bg: "rgba(16,185,129,0.15)", text: "#10b981" },
     DRAFT: { bg: "rgba(245,158,11,0.15)", text: "#f59e0b" },
     ARCHIVED: { bg: "rgba(136,136,136,0.15)", text: "#888888" },
+    SCHEDULED: { bg: "rgba(59,130,246,0.15)", text: "#3b82f6" },
   };
   const labels: Record<string, string> = {
     PUBLISHED: "منشور",
     DRAFT: "مسودة",
     ARCHIVED: "مؤرشف",
+    SCHEDULED: "مجدول",
   };
   const c = colors[status] || colors.DRAFT;
   return (
