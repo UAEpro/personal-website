@@ -23,6 +23,7 @@ interface SnapItem {
   contentUrl: string;
   uploadDate: string;
   mediaType: "image" | "video";
+  link?: string;
 }
 
 interface HighlightGroup {
@@ -814,6 +815,49 @@ function StoryViewer({
           />
         )}
       </div>
+
+      {/* Link attachment */}
+      {snap.link && (
+        <a
+          href={snap.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            bottom: 32,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 20,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "10px 24px",
+            background: "rgba(255, 255, 255, 0.95)",
+            color: "#000",
+            borderRadius: 24,
+            fontSize: 14,
+            fontWeight: 600,
+            textDecoration: "none",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+            fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          {(() => {
+            try {
+              return new URL(snap.link!).hostname.replace("www.", "");
+            } catch {
+              return "فتح الرابط";
+            }
+          })()}
+        </a>
+      )}
     </div>
   );
 }
@@ -963,6 +1007,20 @@ function StoryCarouselRow({
                     borderBottom: "8px solid transparent", borderLeft: "14px solid white",
                     marginLeft: 3,
                   }} />
+                </div>
+              )}
+              {story.link && (
+                <div style={{
+                  position: "absolute", top: 6, right: 6, zIndex: 2,
+                  width: 24, height: 24, borderRadius: "50%",
+                  background: "rgba(0,0,0,0.6)", display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
                 </div>
               )}
               <div style={{

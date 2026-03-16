@@ -6,6 +6,7 @@ interface SnapItem {
   contentUrl: string;
   uploadDate: string;
   mediaType: "image" | "video";
+  link?: string;
 }
 
 interface HighlightGroup {
@@ -38,7 +39,17 @@ function parseSnaps(snapList: any[]): SnapItem[] {
         const n = parseInt(ts, 10);
         if (!isNaN(n)) uploadDate = new Date(n * 1000).toISOString();
       }
-      return { thumbnail, contentUrl, uploadDate, mediaType };
+      // Extract attached link if present
+      const link =
+        val(s.longformVideoProperties?.storyToVideoLink) ||
+        val(s.storyMediaAttachment?.attachmentUrl) ||
+        val(s.shareUrl) ||
+        val(s.actionLink?.url) ||
+        val(s.externalLink) ||
+        val(s.ctaLink) ||
+        "";
+
+      return { thumbnail, contentUrl, uploadDate, mediaType, ...(link ? { link } : {}) };
     })
     .filter((s) => s.contentUrl);
 }
