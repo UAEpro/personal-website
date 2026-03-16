@@ -8,6 +8,9 @@ import CommentSection from "@/components/public/comment-section";
 import BlogContentStyles from "@/components/public/blog-content-styles";
 import type { Metadata } from "next";
 import ReadingProgress from "@/components/public/reading-progress";
+import TableOfContents from "@/components/public/table-of-contents";
+import FloatingShare from "@/components/public/floating-share";
+import { addHeadingIds } from "@/lib/heading-ids";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +103,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
+  // Related posts
+  let relatedPosts: { id: number; title: string; slug: string; coverImage: string | null; readingTime: number; publishedAt: Date | null }[] = [];
+  try {
+    relatedPosts = await prisma.post.findMany({
+      where: {
+        id: { not: post.id },
+        status: PostStatus.PUBLISHED,
+        OR: [
+          ...(post.categoryId ? [{ categoryId: post.categoryId }] : []),
+          { tags: { some: { tagId: { in: post.tags.map((t) => t.tagId) } } } },
+        ],
+      },
+      select: { id: true, title: true, slug: true, coverImage: true, readingTime: true, publishedAt: true },
+      take: 3,
+      orderBy: { publishedAt: "desc" },
+    });
+  } catch {
+    // ignore
+  }
+
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://uaepro.me";
   const postUrl = `${siteUrl}/blog/${encodeURIComponent(post.slug)}`;
 
@@ -107,6 +130,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     ...c,
     createdAt: c.createdAt.toISOString(),
   }));
+
+  const { html: processedContent, headings } = addHeadingIds(post.content);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -123,11 +148,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <>
     <ReadingProgress />
+    <FloatingShare url={postUrl} title={post.title} />
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
     />
-    <article className="blog-post-article" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px" }}>
+    <div className="blog-post-layout" style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 24px", display: "flex", gap: 40 }}>
+      {headings.length >= 2 && <TableOfContents headings={headings} />}
+      <article className="blog-post-article" style={{ flex: 1, minWidth: 0 }}>
       {/* Cover Image */}
       {post.coverImage && (
         <div
@@ -238,7 +266,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           fontSize: 16,
           lineHeight: 2,
         }}
-        dangerouslySetInnerHTML={{ __html: post.content }}
+        dangerouslySetInnerHTML={{ __html: processedContent }}
       />
 
       {/* Share buttons at end */}
@@ -258,9 +286,36 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {/* Comments */}
       <CommentSection postId={post.id} comments={commentsForClient} />
 
+      {/* Related Posts */}
+      {relatedPosts.length > 0 && (
+        <div style={{ marginTop: 48, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+          <h3 style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--accent)", fontSize: 16, fontWeight: 600, marginBottom: 20 }}>
+            {"// "}مقالات ذات صلة
+          </h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
+            {relatedPosts.map((rp) => (
+              <Link key={rp.id} href={`/blog/${rp.slug}`} style={{ textDecoration: "none" }}>
+                <div className="hover-card" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
+                  {rp.coverImage && (
+                    <div style={{ position: "relative", width: "100%", height: 120 }}>
+                      <Image src={rp.coverImage} alt={rp.title} fill style={{ objectFit: "cover" }} />
+                    </div>
+                  )}
+                  <div style={{ padding: 14 }}>
+                    <h4 style={{ color: "var(--text-primary)", fontSize: 14, fontWeight: 600, lineHeight: 1.5, marginBottom: 6 }}>{rp.title}</h4>
+                    <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>{rp.readingTime} دقائق قراءة</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Blog content styling */}
       <BlogContentStyles />
     </article>
+    </div>
     </>
   );
 }

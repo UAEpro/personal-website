@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "./theme-toggle";
 
 const navLinks = [
   { href: "/", label: "الرئيسية" },
@@ -13,7 +14,16 @@ const navLinks = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 50);
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
@@ -27,10 +37,17 @@ export default function Navbar() {
         position: "sticky",
         top: 0,
         zIndex: 50,
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        background: "rgba(17, 17, 19, 0.85)",
-        borderBottom: "1px solid var(--border)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        background: scrolled
+          ? "color-mix(in srgb, var(--bg-primary) 90%, transparent)"
+          : "color-mix(in srgb, var(--bg-primary) 85%, transparent)",
+        borderBottom: scrolled ? "none" : "1px solid var(--border)",
+        border: scrolled ? "1px solid var(--border)" : undefined,
+        borderRadius: scrolled ? 16 : 0,
+        margin: scrolled ? "8px 16px 0" : 0,
+        boxShadow: scrolled ? "0 8px 32px rgba(0, 0, 0, 0.2)" : "none",
+        transition: "border-radius 0.3s ease, margin 0.3s ease, box-shadow 0.3s ease, background 0.3s ease",
       }}
     >
       <div
@@ -63,7 +80,7 @@ export default function Navbar() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 32,
+            gap: 28,
           }}
           className="nav-desktop"
         >
@@ -93,44 +110,46 @@ export default function Navbar() {
               </Link>
             );
           })}
+          <ThemeToggle />
         </div>
 
-        {/* Mobile Hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="nav-hamburger"
-          aria-label="القائمة"
-          style={{
-            display: "none",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: 8,
-          }}
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--text-primary)"
-            strokeWidth="2"
-            strokeLinecap="round"
+        {/* Mobile: Theme Toggle + Hamburger */}
+        <div className="nav-hamburger" style={{ display: "none", alignItems: "center", gap: 8 }}>
+          <ThemeToggle />
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="القائمة"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 8,
+            }}
           >
-            {menuOpen ? (
-              <>
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </>
-            ) : (
-              <>
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </>
-            )}
-          </svg>
-        </button>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--text-primary)"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              {menuOpen ? (
+                <>
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </>
+              ) : (
+                <>
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </>
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -146,6 +165,7 @@ export default function Navbar() {
           maxHeight: menuOpen ? 400 : 0,
           overflow: "hidden",
           transition: "max-height 0.3s ease, padding 0.3s ease, gap 0.3s ease",
+          borderRadius: scrolled ? "0 0 16px 16px" : 0,
         }}
       >
         {navLinks.map((link) => (
@@ -167,7 +187,6 @@ export default function Navbar() {
           </Link>
         ))}
       </div>
-
     </nav>
   );
 }

@@ -41,6 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           rel="stylesheet"
         />
         <link rel="alternate" type="application/rss+xml" title="UAEpro RSS" href="/feed.xml" />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme-mode');if(t==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}})()` }} />
       </head>
       <body className="antialiased">
         <div style={{ overflowX: "hidden", width: "100%", position: "relative" }}>
