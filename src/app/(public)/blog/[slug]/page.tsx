@@ -8,23 +8,10 @@ import CommentSection from "@/components/public/comment-section";
 import BlogContentStyles from "@/components/public/blog-content-styles";
 import type { Metadata } from "next";
 
-export const revalidate = 60;
-export const dynamicParams = true;
+export const dynamic = "force-dynamic";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-  try {
-    const posts = await prisma.post.findMany({
-      where: { status: PostStatus.PUBLISHED },
-      select: { slug: true },
-    });
-    return posts.map((post) => ({ slug: post.slug }));
-  } catch {
-    return [];
-  }
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
