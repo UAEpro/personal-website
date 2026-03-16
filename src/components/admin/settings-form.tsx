@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 
 interface SiteSettings {
   theme: { preset?: string; accent?: string };
-  socialToggles: { x?: boolean; instagram?: boolean; snapchat?: boolean };
+  socialToggles: { x?: boolean; instagram?: boolean; snapchat?: boolean; github?: boolean };
   socialLinks: {
     xUrl?: string;
     instagramUrl?: string;
     snapchatUrl?: string;
     instagramToken?: string;
+    githubUrl?: string;
   };
   socialOrder?: string[];
   seoDefaults: { title?: string; description?: string; ogImage?: string };
@@ -70,7 +71,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
 
   // Social state
   const [socialToggles, setSocialToggles] = useState(
-    settings.socialToggles || { x: false, instagram: false, snapchat: false }
+    settings.socialToggles || { x: false, instagram: false, snapchat: false, github: false }
   );
   const [socialLinks, setSocialLinks] = useState(
     settings.socialLinks || {
@@ -78,11 +79,12 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       instagramUrl: "",
       snapchatUrl: "",
       instagramToken: "",
+      githubUrl: "",
     }
   );
-  type Platform = "x" | "instagram" | "snapchat";
+  type Platform = "x" | "instagram" | "snapchat" | "github";
   const [socialOrder, setSocialOrder] = useState<Platform[]>(
-    (settings.socialOrder as Platform[]) || ["x", "instagram", "snapchat"]
+    (settings.socialOrder as Platform[]) || ["x", "instagram", "snapchat", "github"]
   );
   const [dragItem, setDragItem] = useState<number | null>(null
   );
@@ -375,6 +377,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
                 x: { name: "X (تويتر)", urlKey: "xUrl", icon: "𝕏" },
                 instagram: { name: "انستغرام", urlKey: "instagramUrl", icon: "📷" },
                 snapchat: { name: "سناب شات", urlKey: "snapchatUrl", icon: "👻" },
+                github: { name: "GitHub", urlKey: "githubUrl", icon: "🐙" },
               };
               const info = labels[platform];
               if (!info) return null;

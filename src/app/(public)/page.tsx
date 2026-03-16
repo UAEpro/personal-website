@@ -76,15 +76,17 @@ export default async function HomePage() {
     x?: boolean;
     instagram?: boolean;
     snapchat?: boolean;
+    github?: boolean;
   }) || {};
 
   const socialLinks = (settings?.socialLinks as {
     xUrl?: string;
     instagramUrl?: string;
     snapchatUrl?: string;
+    githubUrl?: string;
   }) || {};
 
-  const socialOrder = (settings?.socialOrder as string[]) || ["x", "instagram", "snapchat"];
+  const socialOrder = (settings?.socialOrder as string[]) || ["x", "instagram", "snapchat", "github"];
 
   // Group skills by category
   const skillsByCategory: Record<string, typeof skills> = {};
@@ -113,7 +115,7 @@ export default async function HomePage() {
 
   const sectionClassName = "section-container";
 
-  const hasAnySocialToggle = socialToggles.x || socialToggles.instagram || socialToggles.snapchat;
+  const hasAnySocialToggle = socialToggles.x || socialToggles.instagram || socialToggles.snapchat || socialToggles.github;
 
   return (
     <>

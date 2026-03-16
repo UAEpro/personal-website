@@ -7,11 +7,13 @@ interface SocialFeedsProps {
     x?: boolean;
     instagram?: boolean;
     snapchat?: boolean;
+    github?: boolean;
   };
   links: {
     xUrl?: string;
     instagramUrl?: string;
     snapchatUrl?: string;
+    githubUrl?: string;
   };
   order?: string[];
 }
@@ -1184,18 +1186,57 @@ function SnapchatStories({ url }: { url: string }) {
   );
 }
 
+/* ─── GitHub Contribution Chart ─── */
+function GitHubChart({ url }: { url: string }) {
+  const username = url.replace(/\/$/, "").split("/").filter(Boolean).pop() || "";
+
+  const chartUrl = `https://ghchart.rshah.org/${username}`;
+
+  return (
+    <div style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid var(--border)" }}>
+        <svg height="20" width="20" viewBox="0 0 16 16" fill="var(--text-primary)">
+          <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/>
+        </svg>
+        <h3 style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--text-primary)", fontSize: 16, fontWeight: 600, margin: 0 }}>GitHub</h3>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ marginInlineStart: "auto", color: "var(--text-secondary)", fontSize: 13, textDecoration: "none", fontFamily: "'IBM Plex Mono', monospace" }}>
+          @{username} &#x2197;
+        </a>
+      </div>
+
+      {/* Contribution Chart */}
+      <div style={{ padding: 16, overflowX: "auto" }}>
+        <img
+          src={chartUrl}
+          alt={`${username}'s GitHub Contributions`}
+          style={{ width: "100%", minWidth: 300, filter: "invert(1) hue-rotate(180deg) brightness(1.5) contrast(0.8)" }}
+        />
+      </div>
+
+      {/* View Profile Link */}
+      <div style={{ padding: "0 16px 16px", textAlign: "center" }}>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", fontSize: 13, textDecoration: "none" }}>
+          عرض الملف الشخصي على GitHub &#x2197;
+        </a>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Social Feeds Component ─── */
 export default function SocialFeeds({ toggles, links, order }: SocialFeedsProps) {
-  const hasAny = toggles.x || toggles.instagram || toggles.snapchat;
+  const hasAny = toggles.x || toggles.instagram || toggles.snapchat || toggles.github;
 
   if (!hasAny) return null;
 
   // Build ordered list of active platforms
-  const platformOrder = order || ["x", "instagram", "snapchat"];
+  const platformOrder = order || ["x", "instagram", "snapchat", "github"];
   const activePlatforms = platformOrder.filter((p) => {
     if (p === "x") return toggles.x && links.xUrl;
     if (p === "instagram") return toggles.instagram && links.instagramUrl;
     if (p === "snapchat") return toggles.snapchat && links.snapchatUrl;
+    if (p === "github") return toggles.github && links.githubUrl;
     return false;
   });
 
@@ -1205,6 +1246,7 @@ export default function SocialFeeds({ toggles, links, order }: SocialFeedsProps)
     if (platform === "x") return <TwitterFeed key="x" url={links.xUrl!} />;
     if (platform === "instagram") return <InstagramFeed key="ig" url={links.instagramUrl!} />;
     if (platform === "snapchat") return <SnapchatStories key="snap" url={links.snapchatUrl!} />;
+    if (platform === "github") return <GitHubChart key="github" url={links.githubUrl!} />;
     return null;
   };
 
