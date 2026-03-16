@@ -33,8 +33,8 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 4,
 };
 
-const linkCategories = ["social", "portfolio", "blog", "streaming", "store", "other"];
-const categoryLabels: Record<string, string> = {
+const defaultCategories = ["social", "portfolio", "blog", "streaming", "store", "other"];
+const defaultLabels: Record<string, string> = {
   social: "تواصل اجتماعي",
   portfolio: "أعمال",
   blog: "مدونة",
@@ -51,6 +51,14 @@ export default function LinksClient({ links }: { links: LinkItem[] }) {
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyLink);
   const [saving, setSaving] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+
+  // Build categories from defaults + any custom ones found in existing links
+  const existingCats = links.map(l => l.category).filter(c => !defaultCategories.includes(c));
+  const allCategories = [...defaultCategories, ...Array.from(new Set(existingCats))];
+  const [customCategories, setCustomCategories] = useState<string[]>(Array.from(new Set(existingCats)));
+  const categoryLabels: Record<string, string> = { ...defaultLabels };
+  customCategories.forEach(c => { if (!categoryLabels[c]) categoryLabels[c] = c; });
 
   function startEdit(link: LinkItem) {
     setEditId(link.id);
@@ -183,13 +191,60 @@ export default function LinksClient({ links }: { links: LinkItem[] }) {
             </div>
             <div>
               <label style={labelStyle}>التصنيف</label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={{ ...inputStyle, cursor: "pointer" }}>
-                {linkCategories.map((cat) => (
+              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={{ ...inputStyle, cursor: "pointer", marginBottom: 6 }}>
+                {[...defaultCategories, ...customCategories].map((cat) => (
                   <option key={cat} value={cat}>
                     {categoryLabels[cat] || cat}
                   </option>
                 ))}
               </select>
+              <div style={{ display: "flex", gap: 6 }}>
+                <input
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  placeholder="تصنيف جديد..."
+                  style={{ ...inputStyle, fontSize: 12 }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newCatName.trim()) {
+                      e.preventDefault();
+                      const val = newCatName.trim();
+                      if (!customCategories.includes(val) && !defaultCategories.includes(val)) {
+                        setCustomCategories(prev => [...prev, val]);
+                      }
+                      categoryLabels[val] = val;
+                      setForm({ ...form, category: val });
+                      setNewCatName("");
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const val = newCatName.trim();
+                    if (!val) return;
+                    if (!customCategories.includes(val) && !defaultCategories.includes(val)) {
+                      setCustomCategories(prev => [...prev, val]);
+                    }
+                    categoryLabels[val] = val;
+                    setForm({ ...form, category: val });
+                    setNewCatName("");
+                  }}
+                  disabled={!newCatName.trim()}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: 6,
+                    border: "1px solid var(--border)",
+                    background: "var(--bg-primary)",
+                    color: "var(--accent)",
+                    fontSize: 16,
+                    cursor: "pointer",
+                    flexShrink: 0,
+                    opacity: !newCatName.trim() ? 0.5 : 1,
+                  }}
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
