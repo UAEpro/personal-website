@@ -13,6 +13,7 @@ interface SocialFeedsProps {
     instagramUrl?: string;
     snapchatUrl?: string;
   };
+  order?: string[];
 }
 
 interface SnapItem {
@@ -1184,42 +1185,40 @@ function SnapchatStories({ url }: { url: string }) {
 }
 
 /* ─── Main Social Feeds Component ─── */
-export default function SocialFeeds({ toggles, links }: SocialFeedsProps) {
+export default function SocialFeeds({ toggles, links, order }: SocialFeedsProps) {
   const hasAny = toggles.x || toggles.instagram || toggles.snapchat;
 
   if (!hasAny) return null;
 
-  // Count active feeds for grid sizing
-  const activeCount = [
-    toggles.x && links.xUrl,
-    toggles.instagram && links.instagramUrl,
-    toggles.snapchat && links.snapchatUrl,
-  ].filter(Boolean).length;
+  // Build ordered list of active platforms
+  const platformOrder = order || ["x", "instagram", "snapchat"];
+  const activePlatforms = platformOrder.filter((p) => {
+    if (p === "x") return toggles.x && links.xUrl;
+    if (p === "instagram") return toggles.instagram && links.instagramUrl;
+    if (p === "snapchat") return toggles.snapchat && links.snapchatUrl;
+    return false;
+  });
+
+  if (activePlatforms.length === 0) return null;
+
+  const renderPlatform = (platform: string) => {
+    if (platform === "x") return <TwitterFeed key="x" url={links.xUrl!} />;
+    if (platform === "instagram") return <InstagramFeed key="ig" url={links.instagramUrl!} />;
+    if (platform === "snapchat") return <SnapchatStories key="snap" url={links.snapchatUrl!} />;
+    return null;
+  };
 
   return (
     <>
       <div
-        className={`social-feeds-grid social-feeds-grid-${activeCount}`}
+        className={`social-feeds-grid social-feeds-grid-${activePlatforms.length}`}
         style={{
           display: "grid",
           gap: 24,
         }}
       >
-        {/* X / Twitter */}
-        {toggles.x && links.xUrl && <TwitterFeed url={links.xUrl} />}
-
-        {/* Instagram */}
-        {toggles.instagram && links.instagramUrl && (
-          <InstagramFeed url={links.instagramUrl} />
-        )}
-
-        {/* Snapchat */}
-        {toggles.snapchat && links.snapchatUrl && (
-          <SnapchatStories url={links.snapchatUrl} />
-        )}
+        {activePlatforms.map((platform) => renderPlatform(platform))}
       </div>
-
-      {/* Responsive handled by .social-feeds-grid in globals.css */}
     </>
   );
 }

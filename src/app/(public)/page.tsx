@@ -84,6 +84,8 @@ export default async function HomePage() {
     snapchatUrl?: string;
   }) || {};
 
+  const socialOrder = (settings?.socialOrder as string[]) || ["x", "instagram", "snapchat"];
+
   // Group skills by category
   const skillsByCategory: Record<string, typeof skills> = {};
   for (const skill of skills) {
@@ -240,7 +242,7 @@ export default async function HomePage() {
       {hasAnySocialToggle && (
         <section className={sectionClassName} style={sectionStyle}>
           <SectionHeading title="تابعني" />
-          <SocialFeeds toggles={socialToggles} links={socialLinks} />
+          <SocialFeeds toggles={socialToggles} links={socialLinks} order={socialOrder} />
         </section>
       )}
 

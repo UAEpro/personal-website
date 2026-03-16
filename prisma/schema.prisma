@@ -141,6 +141,7 @@ model SiteSettings {
   theme         Json   @default("{\"preset\":\"orange\",\"accent\":\"#f97316\"}")
   socialToggles Json   @default("{\"x\":false,\"instagram\":false,\"snapchat\":false}")
   socialLinks   Json   @default("{\"xUrl\":\"\",\"instagramUrl\":\"\",\"snapchatUrl\":\"\",\"instagramToken\":\"\"}")
+  socialOrder   Json   @default("[\"x\",\"instagram\",\"snapchat\"]")
   seoDefaults   Json   @default("{\"title\":\"UAEpro\",\"description\":\"\",\"ogImage\":\"\"}")
   aboutContent  String @db.LongText
   heroTagline   String @default("مبرمج | صانع محتوى | قيمر")

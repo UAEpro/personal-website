@@ -12,6 +12,7 @@ interface SiteSettings {
     snapchatUrl?: string;
     instagramToken?: string;
   };
+  socialOrder?: string[];
   seoDefaults: { title?: string; description?: string; ogImage?: string };
   aboutContent: string;
   heroTagline: string;
@@ -78,6 +79,12 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       snapchatUrl: "",
       instagramToken: "",
     }
+  );
+  type Platform = "x" | "instagram" | "snapchat";
+  const [socialOrder, setSocialOrder] = useState<Platform[]>(
+    (settings.socialOrder as Platform[]) || ["x", "instagram", "snapchat"]
+  );
+  const [dragItem, setDragItem] = useState<number | null>(null
   );
 
   // SEO state
@@ -158,7 +165,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
   }
 
   function handleSaveSocial() {
-    saveSettings({ socialToggles, socialLinks });
+    saveSettings({ socialToggles, socialLinks, socialOrder });
   }
 
   function handleSaveSeo() {
@@ -360,26 +367,49 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         {/* Social Tab */}
         {activeTab === "social" && (
           <div>
-            {(["x", "instagram", "snapchat"] as const).map((platform) => {
-              const labels: Record<string, { name: string; urlKey: string }> = {
-                x: { name: "X (تويتر)", urlKey: "xUrl" },
-                instagram: { name: "انستغرام", urlKey: "instagramUrl" },
-                snapchat: { name: "سناب شات", urlKey: "snapchatUrl" },
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16 }}>
+              اسحب لتغيير ترتيب العرض في الموقع
+            </p>
+            {socialOrder.map((platform: Platform, index: number) => {
+              const labels: Record<Platform, { name: string; urlKey: string; icon: string }> = {
+                x: { name: "X (تويتر)", urlKey: "xUrl", icon: "𝕏" },
+                instagram: { name: "انستغرام", urlKey: "instagramUrl", icon: "📷" },
+                snapchat: { name: "سناب شات", urlKey: "snapchatUrl", icon: "👻" },
               };
               const info = labels[platform];
+              if (!info) return null;
               return (
                 <div
                   key={platform}
+                  draggable
+                  onDragStart={() => setDragItem(index)}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (dragItem === null || dragItem === index) return;
+                    const newOrder = [...socialOrder];
+                    const item = newOrder.splice(dragItem, 1)[0];
+                    newOrder.splice(index, 0, item);
+                    setSocialOrder(newOrder);
+                    setDragItem(index);
+                  }}
+                  onDragEnd={() => setDragItem(null)}
                   style={{
                     marginBottom: 20,
                     paddingBottom: 20,
                     borderBottom: "1px solid var(--border)",
+                    opacity: dragItem === index ? 0.5 : 1,
+                    cursor: "grab",
+                    transition: "opacity 0.2s",
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <span style={{ fontSize: 14, color: "var(--text-primary)", fontWeight: 500 }}>
-                      {info.name}
-                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={{ color: "var(--text-secondary)", fontSize: 16, cursor: "grab", userSelect: "none" }}>⠿</span>
+                      <span style={{ fontSize: 16 }}>{info.icon}</span>
+                      <span style={{ fontSize: 14, color: "var(--text-primary)", fontWeight: 500 }}>
+                        {info.name}
+                      </span>
+                    </div>
                     <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                       <div
                         onClick={() =>
