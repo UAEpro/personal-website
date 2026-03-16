@@ -15,16 +15,18 @@
   }
 }
 
-:root {
-  --bg-primary: #111113;
-  --bg-secondary: #1a1a1e;
-  --bg-terminal: #0d0d0f;
-  --text-primary: #e4e4e7;
-  --text-secondary: #888888;
-  --accent: #f97316;
-  --accent-hover: #ea580c;
-  --border: #2a2a2e;
-  --dot-grid: rgba(255, 255, 255, 0.03);
+@layer base {
+  :root {
+    --bg-primary: #111113;
+    --bg-secondary: #1a1a1e;
+    --bg-terminal: #0d0d0f;
+    --text-primary: #e4e4e7;
+    --text-secondary: #888888;
+    --accent: #f97316;
+    --accent-hover: #ea580c;
+    --border: #2a2a2e;
+    --dot-grid: rgba(255, 255, 255, 0.03);
+  }
 }
 
 /* Light mode overrides */

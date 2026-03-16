@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { Metadata } from "next";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "الروابط | UAEpro",
