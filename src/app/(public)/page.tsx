@@ -5,6 +5,7 @@ import ContactForm from "@/components/public/contact-form";
 import SocialFeeds from "@/components/public/social-feeds";
 import Link from "next/link";
 import Image from "next/image";
+import ScrollAnimator from "@/components/public/scroll-animator";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,9 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Scroll reveal animator */}
+      <ScrollAnimator />
+
       {/* 1. Hero */}
       <Hero tagline={tagline} />
 
@@ -165,7 +169,6 @@ export default async function HomePage() {
                     border: "1px solid var(--border)",
                     borderRadius: 12,
                     overflow: "hidden",
-                    transition: "border-color 0.2s, transform 0.2s",
                     cursor: "pointer",
                   }}
                 >
@@ -186,7 +189,7 @@ export default async function HomePage() {
                           display: "inline-block",
                           fontSize: 12,
                           color: "var(--accent)",
-                          background: "rgba(249, 115, 22, 0.1)",
+                          background: "color-mix(in srgb, var(--accent) 15%, transparent)",
                           padding: "4px 10px",
                           borderRadius: 4,
                           fontWeight: 600,
@@ -263,12 +266,12 @@ export default async function HomePage() {
             {projects.map((project) => (
               <div
                 key={project.id}
+                className="hover-card"
                 style={{
                   background: "var(--bg-secondary)",
                   border: "1px solid var(--border)",
                   borderRadius: 12,
                   padding: 24,
-                  transition: "border-color 0.2s",
                 }}
               >
                 <h3
@@ -352,6 +355,7 @@ export default async function HomePage() {
                   {categorySkills.map((skill) => (
                     <span
                       key={skill.id}
+                      className="skill-pill"
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
@@ -394,6 +398,7 @@ export default async function HomePage() {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="hover-card"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -403,7 +408,6 @@ export default async function HomePage() {
                   border: "1px solid var(--border)",
                   borderRadius: 12,
                   textDecoration: "none",
-                  transition: "border-color 0.2s, transform 0.2s",
                 }}
               >
                 {link.icon && (

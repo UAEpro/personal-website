@@ -19,7 +19,21 @@ export default function Hero({ tagline }: HeroProps) {
         position: "relative",
       }}
     >
-      <div style={{ maxWidth: "min(700px, 100%)", width: "100%", textAlign: "center", padding: "0 16px", boxSizing: "border-box" }}>
+      {/* Animated gradient orbs */}
+      <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+        <div style={{
+          position: "absolute", width: 500, height: 500, borderRadius: "50%",
+          background: "var(--accent)", opacity: 0.06, filter: "blur(100px)",
+          top: "-10%", right: "-15%", animation: "float-1 12s ease-in-out infinite",
+        }} />
+        <div style={{
+          position: "absolute", width: 400, height: 400, borderRadius: "50%",
+          background: "var(--accent)", opacity: 0.04, filter: "blur(80px)",
+          bottom: "-10%", left: "-10%", animation: "float-2 15s ease-in-out infinite",
+        }} />
+      </div>
+
+      <div style={{ maxWidth: "min(700px, 100%)", width: "100%", textAlign: "center", padding: "0 16px", boxSizing: "border-box", position: "relative" }}>
         {/* Terminal Window */}
         <div className="terminal-window" style={{ marginBottom: 40, textAlign: "left", direction: "ltr" }}>
           <div className="terminal-header">
