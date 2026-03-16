@@ -22,6 +22,7 @@ interface SnapStory {
   uploadDate: string;
   description: string;
   encodingFormat?: string;
+  mediaType?: "image" | "video";
 }
 
 interface SnapProfile {
@@ -327,6 +328,7 @@ function StoryViewer({
   const story = stories[currentIndex];
 
   const isVideo =
+    story?.mediaType === "video" ||
     story?.encodingFormat?.includes("video") ||
     story?.contentUrl?.includes("video") ||
     story?.contentUrl?.endsWith(".mp4");
@@ -543,47 +545,23 @@ function StoryViewer({
   );
 }
 
-/* ─── Snapchat Stories Carousel ─── */
-function SnapchatStories({ url }: { url: string }) {
-  const [stories, setStories] = useState<SnapStory[]>([]);
-  const [profile, setProfile] = useState<SnapProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
-  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+/* ─── Story Carousel Row ─── */
+function StoryCarouselRow({
+  items,
+  onItemClick,
+  emptyMessage,
+  loading,
+  fetchError,
+  profileUrl,
+}: {
+  items: SnapStory[];
+  onItemClick: (index: number) => void;
+  emptyMessage: string;
+  loading: boolean;
+  fetchError: boolean;
+  profileUrl: string;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Extract username from URL like https://snapchat.com/@username or https://www.snapchat.com/add/username
-  const username = url
-    .replace(/\/$/, "")
-    .split("/")
-    .filter(Boolean)
-    .pop()
-    ?.replace("@", "") || "";
-
-  useEffect(() => {
-    if (!username) return;
-
-    const fetchStories = async () => {
-      try {
-        const res = await fetch(
-          `/api/snapchat?username=${encodeURIComponent(username)}`
-        );
-        const json = await res.json();
-        if (json.success && json.data) {
-          setStories(json.data.stories || []);
-          setProfile(json.data.profile || null);
-        } else {
-          setFetchError(true);
-        }
-      } catch {
-        setFetchError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStories();
-  }, [username]);
 
   const formatStoryDate = (dateStr: string) => {
     if (!dateStr) return "";
@@ -612,6 +590,343 @@ function SnapchatStories({ url }: { url: string }) {
   const scrollRight = () => {
     scrollRef.current?.scrollBy({ left: 260, behavior: "smooth" });
   };
+
+  return (
+    <div style={{ position: "relative", padding: "0 8px" }}>
+      {/* Scroll buttons */}
+      {items.length > 3 && (
+        <>
+          <button
+            className="snap-scroll-btn"
+            onClick={scrollLeft}
+            aria-label="Scroll left"
+            style={{
+              position: "absolute",
+              left: 0,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 2,
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              border: "1px solid var(--border)",
+              background: "var(--bg-secondary)",
+              color: "var(--text-primary)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+              opacity: 0.8,
+            }}
+          >
+            &#x2039;
+          </button>
+          <button
+            className="snap-scroll-btn"
+            onClick={scrollRight}
+            aria-label="Scroll right"
+            style={{
+              position: "absolute",
+              right: 0,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 2,
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              border: "1px solid var(--border)",
+              background: "var(--bg-secondary)",
+              color: "var(--text-primary)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+              opacity: 0.8,
+            }}
+          >
+            &#x203A;
+          </button>
+        </>
+      )}
+
+      <div
+        ref={scrollRef}
+        className="snap-stories-scroll"
+        style={{
+          overflowX: "auto",
+          display: "flex",
+          gap: 12,
+          padding: "16px 8px",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        {/* Loading state */}
+        {loading &&
+          Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={`skeleton-${i}`}
+              style={{
+                flexShrink: 0,
+                width: 120,
+                aspectRatio: "9/16",
+                borderRadius: 12,
+                background: "var(--bg-terminal)",
+                border: "2px solid var(--border)",
+                animation: "pulse 1.5s ease-in-out infinite",
+              }}
+            />
+          ))}
+
+        {/* Items */}
+        {!loading &&
+          items.length > 0 &&
+          items.map((story, i) => (
+            <button
+              key={`story-${i}`}
+              className="snap-story-item"
+              onClick={() => onItemClick(i)}
+              style={{
+                flexShrink: 0,
+                width: 120,
+                aspectRatio: "9/16",
+                borderRadius: 12,
+                overflow: "hidden",
+                position: "relative",
+                cursor: "pointer",
+                border: "2px solid #FFFC00",
+                textDecoration: "none",
+                display: "block",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                background: "transparent",
+                padding: 0,
+              }}
+            >
+              {/* Thumbnail */}
+              {story.thumbnail ? (
+                <img
+                  src={story.thumbnail}
+                  alt={story.description || `Story ${i + 1}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                  }}
+                  loading="lazy"
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    background:
+                      "linear-gradient(135deg, #FFFC00 0%, #FF6B00 100%)",
+                  }}
+                />
+              )}
+
+              {/* Play icon for videos */}
+              {(story.mediaType === "video" ||
+                story.encodingFormat?.includes("video") ||
+                story.contentUrl?.includes("video") ||
+                story.contentUrl?.endsWith(".mp4")) && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    background: "rgba(0,0,0,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 0,
+                      height: 0,
+                      borderTop: "8px solid transparent",
+                      borderBottom: "8px solid transparent",
+                      borderLeft: "14px solid white",
+                      marginLeft: 3,
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Bottom gradient overlay */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: "50%",
+                  background:
+                    "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  padding: 8,
+                }}
+              >
+                <span
+                  style={{
+                    color: "rgba(255,255,255,0.9)",
+                    fontSize: 11,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                  }}
+                >
+                  {formatStoryDate(story.uploadDate)}
+                </span>
+              </div>
+            </button>
+          ))}
+
+        {/* No items / error state */}
+        {!loading && items.length === 0 && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              padding: "32px 24px",
+              gap: 12,
+            }}
+          >
+            {fetchError ? (
+              <>
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--text-secondary)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span
+                  style={{
+                    color: "var(--text-secondary)",
+                    fontSize: 13,
+                    fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+                    textAlign: "center",
+                  }}
+                >
+                  تعذر التحميل
+                </span>
+              </>
+            ) : (
+              <span
+                style={{
+                  color: "var(--text-secondary)",
+                  fontSize: 13,
+                  fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+                  textAlign: "center",
+                }}
+              >
+                {emptyMessage}
+              </span>
+            )}
+
+            {/* Always show a link to the profile */}
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                marginTop: 4,
+                color: "#FFFC00",
+                fontSize: 12,
+                fontWeight: 500,
+                textDecoration: "none",
+                fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+                padding: "6px 16px",
+                borderRadius: 20,
+                background: "rgba(255, 252, 0, 0.1)",
+                border: "1px solid rgba(255, 252, 0, 0.25)",
+                transition: "background 0.2s",
+              }}
+            >
+              تابعنا على Snapchat &#x2197;
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Snapchat Stories Component ─── */
+function SnapchatStories({ url }: { url: string }) {
+  const [stories, setStories] = useState<SnapStory[]>([]);
+  const [highlights, setHighlights] = useState<SnapStory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+  const [viewerItems, setViewerItems] = useState<SnapStory[] | null>(null);
+  const [viewerIndex, setViewerIndex] = useState<number>(0);
+
+  // Extract username from URL like https://snapchat.com/@username or https://www.snapchat.com/add/username
+  const username = url
+    .replace(/\/$/, "")
+    .split("/")
+    .filter(Boolean)
+    .pop()
+    ?.replace("@", "") || "";
+
+  useEffect(() => {
+    if (!username) return;
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          `/api/snapchat?username=${encodeURIComponent(username)}`
+        );
+        const json = await res.json();
+        if (json.success && json.data) {
+          setStories(json.data.stories || []);
+          setHighlights(json.data.highlights || []);
+        } else {
+          setFetchError(true);
+        }
+      } catch {
+        setFetchError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [username]);
+
+  const openViewer = (items: SnapStory[], index: number) => {
+    setViewerItems(items);
+    setViewerIndex(index);
+  };
+
+  const hasStories = stories.length > 0;
+  const hasHighlights = highlights.length > 0;
+  const hasAny = hasStories || hasHighlights;
 
   return (
     <div
@@ -664,302 +979,72 @@ function SnapchatStories({ url }: { url: string }) {
         </a>
       </div>
 
-      {/* Stories carousel */}
-      <div style={{ position: "relative", padding: "0 8px" }}>
-        {/* Scroll buttons */}
-        {stories.length > 3 && (
-          <>
-            <button
-              className="snap-scroll-btn"
-              onClick={scrollLeft}
-              aria-label="Scroll left"
-              style={{
-                position: "absolute",
-                left: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
-                zIndex: 2,
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                border: "1px solid var(--border)",
-                background: "var(--bg-secondary)",
-                color: "var(--text-primary)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-                opacity: 0.8,
-              }}
-            >
-              &#x2039;
-            </button>
-            <button
-              className="snap-scroll-btn"
-              onClick={scrollRight}
-              aria-label="Scroll right"
-              style={{
-                position: "absolute",
-                right: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
-                zIndex: 2,
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                border: "1px solid var(--border)",
-                background: "var(--bg-secondary)",
-                color: "var(--text-primary)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-                opacity: 0.8,
-              }}
-            >
-              &#x203A;
-            </button>
-          </>
-        )}
-
-        <div
-          ref={scrollRef}
-          className="snap-stories-scroll"
-          style={{
-            overflowX: "auto",
-            display: "flex",
-            gap: 12,
-            padding: "16px 8px",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
-          {/* Loading state */}
-          {loading &&
-            Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={`skeleton-${i}`}
-                style={{
-                  flexShrink: 0,
-                  width: 120,
-                  aspectRatio: "9/16",
-                  borderRadius: 12,
-                  background: "var(--bg-terminal)",
-                  border: "2px solid var(--border)",
-                  animation: "pulse 1.5s ease-in-out infinite",
-                }}
-              />
-            ))}
-
-          {/* Stories */}
-          {!loading &&
-            stories.length > 0 &&
-            stories.map((story, i) => (
-              <button
-                key={`story-${i}`}
-                className="snap-story-item"
-                onClick={() => setViewerIndex(i)}
-                style={{
-                  flexShrink: 0,
-                  width: 120,
-                  aspectRatio: "9/16",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  position: "relative",
-                  cursor: "pointer",
-                  border: "2px solid #FFFC00",
-                  textDecoration: "none",
-                  display: "block",
-                  transition: "transform 0.2s, box-shadow 0.2s",
-                  background: "transparent",
-                  padding: 0,
-                }}
-              >
-                {/* Thumbnail */}
-                {story.thumbnail ? (
-                  <img
-                    src={story.thumbnail}
-                    alt={story.description || `Story ${i + 1}`}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                    }}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      background:
-                        "linear-gradient(135deg, #FFFC00 0%, #FF6B00 100%)",
-                    }}
-                  />
-                )}
-
-                {/* Play icon for videos */}
-                {(story.encodingFormat?.includes("video") ||
-                  story.contentUrl?.includes("video") ||
-                  story.contentUrl?.endsWith(".mp4")) && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      background: "rgba(0,0,0,0.5)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      zIndex: 1,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 0,
-                        height: 0,
-                        borderTop: "8px solid transparent",
-                        borderBottom: "8px solid transparent",
-                        borderLeft: "14px solid white",
-                        marginLeft: 3,
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* Bottom gradient overlay */}
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: "50%",
-                    background:
-                      "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)",
-                    display: "flex",
-                    alignItems: "flex-end",
-                    padding: 8,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "rgba(255,255,255,0.9)",
-                      fontSize: 11,
-                      fontFamily: "'IBM Plex Mono', monospace",
-                    }}
-                  >
-                    {formatStoryDate(story.uploadDate)}
-                  </span>
-                </div>
-              </button>
-            ))}
-
-          {/* No stories / error state */}
-          {!loading && stories.length === 0 && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                padding: "40px 24px",
-                gap: 12,
-              }}
-            >
-              {fetchError ? (
-                <>
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="var(--text-secondary)"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                  <span
-                    style={{
-                      color: "var(--text-secondary)",
-                      fontSize: 14,
-                      fontFamily:
-                        "'IBM Plex Sans Arabic', system-ui, sans-serif",
-                      textAlign: "center",
-                    }}
-                  >
-                    تعذر تحميل القصص
-                  </span>
-                </>
-              ) : (
-                <>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="#FFFC00" opacity="0.5">
-                    <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12.922-.214.095-.034.185-.066.272-.093a.72.72 0 0 1 .115-.018c.249 0 .44.2.44.443 0 .199-.123.384-.313.472-.116.054-.25.097-.39.141l-.004.002c-.477.156-.783.308-.796.629-.006.147.08.295.196.442l.018.023c.349.46 1.036 1.1 1.632 1.369.18.08.377.198.377.456 0 .166-.1.346-.305.485-.472.323-1.235.422-1.518.467l-.037.006c-.064.01-.093.028-.105.07-.014.046-.007.115.007.195.017.095.038.191.062.29.024.096.05.194.067.268a.524.524 0 0 1-.105.484c-.168.192-.464.292-.84.292-.196 0-.409-.026-.626-.065-.298-.054-.632-.072-.982-.072-.327 0-.637.015-.883.08a3.567 3.567 0 0 0-.793.39c-.627.37-1.204.759-2.403.759h-.058c-1.2 0-1.777-.39-2.404-.76a3.568 3.568 0 0 0-.793-.39c-.247-.064-.556-.08-.883-.08-.35 0-.684.02-.981.073a4.876 4.876 0 0 1-.627.064c-.396 0-.68-.113-.836-.302a.52.52 0 0 1-.1-.475c.017-.075.042-.17.066-.267.024-.099.045-.196.063-.29.014-.08.02-.149.006-.196-.012-.042-.04-.06-.105-.07l-.037-.006c-.283-.045-1.046-.144-1.518-.467-.205-.139-.305-.319-.305-.485 0-.258.197-.376.377-.456.596-.27 1.283-.91 1.632-1.37l.018-.022c.116-.147.203-.295.196-.442-.013-.32-.319-.473-.796-.63l-.004-.001a2.853 2.853 0 0 1-.39-.14c-.19-.09-.313-.274-.313-.473 0-.243.19-.443.44-.443l.115.018c.087.027.177.06.272.093.263.094.622.23.922.214.198 0 .326-.045.401-.09a10.86 10.86 0 0 1-.03-.51l-.003-.06c-.104-1.628-.23-3.654.3-4.847C7.846 1.069 11.216.793 12.206.793" />
-                  </svg>
-                  <span
-                    style={{
-                      color: "var(--text-secondary)",
-                      fontSize: 14,
-                      fontFamily:
-                        "'IBM Plex Sans Arabic', system-ui, sans-serif",
-                      textAlign: "center",
-                    }}
-                  >
-                    لا توجد قصص حاليا
-                  </span>
-                </>
-              )}
-
-              {/* Always show a link to the profile */}
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  marginTop: 8,
-                  color: "#FFFC00",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  textDecoration: "none",
-                  fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
-                  padding: "8px 20px",
-                  borderRadius: 20,
-                  background: "rgba(255, 252, 0, 0.1)",
-                  border: "1px solid rgba(255, 252, 0, 0.25)",
-                  transition: "background 0.2s",
-                }}
-              >
-                تابعنا على Snapchat &#x2197;
-              </a>
-            </div>
-          )}
+      {/* Stories section */}
+      {(loading || hasStories || (!hasAny && !loading)) && (
+        <div>
+          <div
+            style={{
+              padding: "12px 24px 0",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--text-secondary)",
+              fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: hasStories ? "#4ade80" : "var(--border)", display: "inline-block" }} />
+            القصص
+          </div>
+          <StoryCarouselRow
+            items={stories}
+            onItemClick={(i) => openViewer(stories, i)}
+            emptyMessage="لا توجد قصص حاليا"
+            loading={loading}
+            fetchError={fetchError}
+            profileUrl={url}
+          />
         </div>
-      </div>
+      )}
+
+      {/* Highlights section */}
+      {(loading || hasHighlights) && (
+        <div>
+          <div
+            style={{
+              padding: "4px 24px 0",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--text-secondary)",
+              fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+              borderTop: hasStories || loading ? "1px solid var(--border)" : "none",
+              paddingTop: hasStories || loading ? 12 : 4,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFC00", display: "inline-block" }} />
+            {"\u0623\u0628\u0631\u0632 \u0627\u0644\u0644\u062D\u0638\u0627\u062A"}
+          </div>
+          <StoryCarouselRow
+            items={highlights}
+            onItemClick={(i) => openViewer(highlights, i)}
+            emptyMessage={"\u0644\u0627 \u062A\u0648\u062C\u062F \u0644\u062D\u0638\u0627\u062A \u0645\u062D\u0641\u0648\u0638\u0629"}
+            loading={loading}
+            fetchError={fetchError}
+            profileUrl={url}
+          />
+        </div>
+      )}
 
       {/* Story Viewer Modal */}
-      {viewerIndex !== null && stories.length > 0 && (
+      {viewerItems && viewerItems.length > 0 && (
         <StoryViewer
-          stories={stories}
+          stories={viewerItems}
           initialIndex={viewerIndex}
-          onClose={() => setViewerIndex(null)}
+          onClose={() => setViewerItems(null)}
         />
       )}
 
@@ -994,15 +1079,9 @@ export default function SocialFeeds({ toggles, links }: SocialFeedsProps) {
   return (
     <>
       <div
-        className="social-feeds-grid"
+        className={`social-feeds-grid social-feeds-grid-${activeCount}`}
         style={{
           display: "grid",
-          gridTemplateColumns:
-            activeCount === 1
-              ? "1fr"
-              : activeCount === 2
-                ? "repeat(2, 1fr)"
-                : "repeat(3, 1fr)",
           gap: 24,
         }}
       >

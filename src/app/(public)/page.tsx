@@ -145,7 +145,7 @@ export default async function HomePage() {
             className="responsive-grid-posts"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
               gap: 24,
             }}
           >
@@ -252,7 +252,7 @@ export default async function HomePage() {
             className="responsive-grid-projects"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
               gap: 24,
             }}
           >

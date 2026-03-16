@@ -232,7 +232,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           className="responsive-grid-posts"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
             gap: 24,
           }}
         >
