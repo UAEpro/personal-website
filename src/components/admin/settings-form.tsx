@@ -632,121 +632,104 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
               يمكنك كتابة مقالات، نشرها، وتعديلها بالكلام الطبيعي.
             </p>
 
-            {/* Download / Copy buttons */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+            {/* Step 1: API Key */}
+            <div style={{ marginBottom: 24, padding: 16, borderRadius: 8, background: "var(--bg-primary)", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <span style={{ background: "var(--accent)", color: "var(--bg-primary)", width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>1</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>مفتاح API</span>
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 12 }}>
+                {generatedKey ? "احفظ هذا المفتاح — ستحتاجه في الخطوة التالية. لن يظهر مرة أخرى." : settings.apiKeyHash ? "لديك مفتاح بالفعل. إذا نسيته، أنشئ واحداً جديداً." : "أنشئ مفتاح API أولاً."}
+              </p>
+              <div style={{ padding: "10px 14px", borderRadius: 6, background: "var(--bg-secondary)", border: "1px solid var(--border)", fontFamily: "monospace", fontSize: 13, color: generatedKey ? "var(--accent)" : "var(--text-secondary)", marginBottom: 12, wordBreak: "break-all" }}>
+                {generatedKey || (settings.apiKeyHash ? "••••••••••••••••••••••••••••••••" : "لم يتم إنشاء مفتاح بعد")}
+              </div>
+              {generatedKey && (
+                <button
+                  onClick={() => { navigator.clipboard.writeText(generatedKey); }}
+                  style={{ padding: "6px 14px", borderRadius: 4, border: "1px solid var(--border)", background: "transparent", color: "var(--text-secondary)", fontSize: 12, cursor: "pointer", marginLeft: 8 }}
+                >
+                  نسخ المفتاح
+                </button>
+              )}
+              <button
+                onClick={handleRegenerateApiKey}
+                disabled={saving}
+                style={{ padding: "6px 14px", borderRadius: 4, border: "none", background: generatedKey ? "var(--border)" : "var(--accent)", color: generatedKey ? "var(--text-secondary)" : "var(--bg-primary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+              >
+                {saving ? "..." : settings.apiKeyHash ? "إنشاء مفتاح جديد" : "إنشاء مفتاح"}
+              </button>
+            </div>
+
+            {/* Step 2: Install */}
+            <div style={{ marginBottom: 24, padding: 16, borderRadius: 8, background: "var(--bg-primary)", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <span style={{ background: "var(--accent)", color: "var(--bg-primary)", width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>2</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>تثبيت المهارة في Claude Code</span>
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 12 }}>
+                انسخ هذا الأمر وشغّله في Terminal. سيُنشئ مجلد المهارة ويحمّل الملف مع مفتاح API مدمج:
+              </p>
+              <div style={{ position: "relative" }}>
+                <pre style={{ padding: "12px 14px", borderRadius: 6, background: "var(--bg-secondary)", border: "1px solid var(--border)", fontFamily: "monospace", fontSize: 11, color: "var(--text-secondary)", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", margin: 0, lineHeight: 1.6 }}>
+{`mkdir -p ~/.claude/skills/uaepro-blog && curl -s -o ~/.claude/skills/uaepro-blog/SKILL.md "${typeof window !== "undefined" ? window.location.origin : "https://uaepro.me"}/api/skill${generatedKey ? `?key=${generatedKey}` : ""}" -H "Authorization: Bearer ${generatedKey || "<YOUR_API_KEY>"}"${generatedKey ? "" : `
+
+# استبدل <YOUR_API_KEY> بمفتاح API من الخطوة 1`}`}
+                </pre>
+                <button
+                  onClick={() => {
+                    const cmd = `mkdir -p ~/.claude/skills/uaepro-blog && curl -s -o ~/.claude/skills/uaepro-blog/SKILL.md "${window.location.origin}/api/skill${generatedKey ? `?key=${generatedKey}` : ""}" -H "Authorization: Bearer ${generatedKey || "<YOUR_API_KEY>"}"`;
+                    navigator.clipboard.writeText(cmd);
+                    setCurlCopied(true);
+                    setTimeout(() => setCurlCopied(false), 2000);
+                  }}
+                  style={{ position: "absolute", top: 8, left: 8, padding: "4px 10px", borderRadius: 4, border: "1px solid var(--border)", background: "var(--bg-primary)", color: "var(--text-secondary)", fontSize: 11, cursor: "pointer" }}
+                >
+                  {curlCopied ? "تم!" : "نسخ"}
+                </button>
+              </div>
+              <p style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 8 }}>
+                المسار: <code style={{ fontFamily: "monospace", color: "var(--accent)" }}>~/.claude/skills/uaepro-blog/SKILL.md</code>
+              </p>
+            </div>
+
+            {/* Step 3: Use */}
+            <div style={{ marginBottom: 24, padding: 16, borderRadius: 8, background: "var(--bg-primary)", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <span style={{ background: "var(--accent)", color: "var(--bg-primary)", width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>3</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>الاستخدام</span>
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 12, lineHeight: 1.7 }}>
+                بعد التثبيت، افتح Claude Code وقل أي شيء مثل:
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  "اكتب لي مقال عن الذكاء الاصطناعي",
+                  "شوف مسوداتي في المدونة",
+                  "انشر المقال رقم 5",
+                  "write a blog post about Next.js",
+                ].map((ex) => (
+                  <div key={ex} style={{ padding: "8px 12px", borderRadius: 6, background: "var(--bg-secondary)", border: "1px solid var(--border)", fontSize: 12, color: "var(--text-primary)", fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif" }}>
+                    &ldquo;{ex}&rdquo;
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Download as file button */}
+            <div style={{ display: "flex", gap: 10 }}>
               <button
                 onClick={handleDownloadSkill}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: 6,
-                  border: "none",
-                  background: "var(--accent)",
-                  color: "var(--bg-primary)",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
+                style={{ padding: "10px 20px", borderRadius: 6, border: "1px solid var(--border)", background: "var(--bg-primary)", color: "var(--text-primary)", fontSize: 13, cursor: "pointer" }}
               >
-                تحميل المهارة
+                تحميل SKILL.md
               </button>
               <button
                 onClick={handleCopySkill}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: 6,
-                  border: "1px solid var(--border)",
-                  background: "var(--bg-primary)",
-                  color: "var(--text-primary)",
-                  fontSize: 14,
-                  cursor: "pointer",
-                }}
+                style={{ padding: "10px 20px", borderRadius: 6, border: "1px solid var(--border)", background: "var(--bg-primary)", color: "var(--text-primary)", fontSize: 13, cursor: "pointer" }}
               >
-                {skillCopied ? "تم النسخ!" : "نسخ المحتوى"}
+                {skillCopied ? "تم النسخ!" : "نسخ محتوى المهارة"}
               </button>
-            </div>
-
-            {/* Installation command */}
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <label style={labelStyle}>أمر التثبيت السريع</label>
-                <button
-                  onClick={handleCopyCurl}
-                  style={{
-                    padding: "4px 10px",
-                    borderRadius: 4,
-                    border: "1px solid var(--border)",
-                    background: "transparent",
-                    color: "var(--text-secondary)",
-                    fontSize: 12,
-                    cursor: "pointer",
-                  }}
-                >
-                  {curlCopied ? "تم النسخ!" : "نسخ"}
-                </button>
-              </div>
-              <pre
-                style={{
-                  padding: "12px 16px",
-                  borderRadius: 6,
-                  background: "var(--bg-primary)",
-                  border: "1px solid var(--border)",
-                  fontFamily: "monospace",
-                  fontSize: 12,
-                  color: "var(--text-secondary)",
-                  overflowX: "auto",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-all",
-                  margin: 0,
-                }}
-              >
-                {curlInstallCmd}
-              </pre>
-            </div>
-
-            {/* Env vars reminder */}
-            <div
-              style={{
-                padding: "12px 16px",
-                borderRadius: 6,
-                background: "rgba(245,158,11,0.1)",
-                border: "1px solid rgba(245,158,11,0.3)",
-                marginBottom: 24,
-              }}
-            >
-              <p style={{ fontSize: 13, color: "#f59e0b", fontWeight: 600, marginBottom: 8 }}>
-                متغيرات البيئة المطلوبة
-              </p>
-              <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, lineHeight: 1.7 }}>
-                أضف هذه المتغيرات إلى ملف إعداد Claude Code (<code style={{ fontFamily: "monospace" }}>~/.claude/settings.json</code> أو متغيرات الشل):
-                <br />
-                <code style={{ fontFamily: "monospace", display: "block", marginTop: 6 }}>
-                  UAEPRO_API_KEY=&lt;مفتاح API من تبويب API&gt;
-                </code>
-              </p>
-            </div>
-
-            {/* Skill file content preview */}
-            <div>
-              <label style={labelStyle}>محتوى ملف المهارة (للمراجعة)</label>
-              <textarea
-                readOnly
-                defaultValue={`# تحميل المحتوى من /api/skill ...`}
-                onFocus={async (e) => {
-                  if (e.target.value.startsWith("# تحميل")) {
-                    const res = await fetch("/api/skill");
-                    if (res.ok) e.target.value = await res.text();
-                  }
-                }}
-                rows={14}
-                style={{
-                  ...inputStyle,
-                  fontFamily: "monospace",
-                  fontSize: 12,
-                  resize: "vertical",
-                  cursor: "text",
-                  color: "var(--text-secondary)",
-                }}
-              />
             </div>
           </div>
         )}
