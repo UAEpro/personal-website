@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
 interface TweetData {
   id: string;
@@ -51,7 +53,7 @@ export async function GET(req: NextRequest) {
           headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
         });
       }
-      return NextResponse.json({ error: `Twitter returned ${res.status}`, tweets: [] }, { status: 200 });
+      return serveFallback();
     }
 
     const html = await res.text();
@@ -61,7 +63,7 @@ export async function GET(req: NextRequest) {
       if (cache[key]) {
         return NextResponse.json({ tweets: cache[key].tweets, stale: true });
       }
-      return NextResponse.json({ error: "Could not extract tweet data", tweets: [] }, { status: 200 });
+      return serveFallback();
     }
 
     const nextData = JSON.parse(match[1]);
@@ -113,6 +115,20 @@ export async function GET(req: NextRequest) {
     if (cache[key]) {
       return NextResponse.json({ tweets: cache[key].tweets, stale: true });
     }
-    return NextResponse.json({ error: "Failed to fetch tweets", tweets: [] }, { status: 200 });
+    // Fallback to static JSON file
+    return serveFallback();
+  }
+}
+
+async function serveFallback() {
+  try {
+    const filePath = join(process.cwd(), "public", "data", "tweets.json");
+    const data = await readFile(filePath, "utf-8");
+    const tweets = JSON.parse(data);
+    return NextResponse.json({ tweets, static: true }, {
+      headers: { "Cache-Control": "public, s-maxage=86400" },
+    });
+  } catch {
+    return NextResponse.json({ tweets: [] }, { status: 200 });
   }
 }
