@@ -40,6 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
+        <link rel="alternate" type="application/rss+xml" title="UAEpro RSS" href="/feed.xml" />
       </head>
       <body className="antialiased">
         <div style={{ overflowX: "hidden", width: "100%", position: "relative" }}>

@@ -7,6 +7,7 @@ import ShareButtons from "@/components/public/share-buttons";
 import CommentSection from "@/components/public/comment-section";
 import BlogContentStyles from "@/components/public/blog-content-styles";
 import type { Metadata } from "next";
+import ReadingProgress from "@/components/public/reading-progress";
 
 export const dynamic = "force-dynamic";
 
@@ -100,14 +101,32 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://uaepro.me";
-  const postUrl = `${siteUrl}/blog/${post.slug}`;
+  const postUrl = `${siteUrl}/blog/${encodeURIComponent(post.slug)}`;
 
   const commentsForClient = post.comments.map((c) => ({
     ...c,
     createdAt: c.createdAt.toISOString(),
   }));
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    datePublished: post.publishedAt?.toISOString(),
+    dateModified: post.updatedAt?.toISOString(),
+    author: { "@type": "Person", name: post.author?.name || "UAEpro" },
+    description: post.excerpt || "",
+    image: post.coverImage || undefined,
+    url: postUrl,
+  };
+
   return (
+    <>
+    <ReadingProgress />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
     <article className="blog-post-article" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px" }}>
       {/* Cover Image */}
       {post.coverImage && (
@@ -242,5 +261,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {/* Blog content styling */}
       <BlogContentStyles />
     </article>
+    </>
   );
 }

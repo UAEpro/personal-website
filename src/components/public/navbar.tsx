@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { href: "/", label: "الرئيسية" },
@@ -12,6 +13,13 @@ const navLinks = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    if (href.startsWith("#")) return false;
+    return pathname.startsWith(href);
+  }
 
   return (
     <nav
@@ -59,27 +67,32 @@ export default function Navbar() {
           }}
           className="nav-desktop"
         >
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              style={{
-                color: "var(--text-secondary)",
-                textDecoration: "none",
-                fontSize: 15,
-                fontWeight: 500,
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = "var(--text-primary)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "var(--text-secondary)")
-              }
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const active = isActive(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  color: active ? "var(--text-primary)" : "var(--text-secondary)",
+                  textDecoration: "none",
+                  fontSize: 15,
+                  fontWeight: active ? 600 : 500,
+                  transition: "color 0.2s",
+                  borderBottom: active ? "2px solid var(--accent)" : "2px solid transparent",
+                  paddingBottom: 4,
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.color = "var(--text-primary)")
+                }
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.color = "var(--text-secondary)";
+                }}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Mobile Hamburger */}
@@ -141,10 +154,10 @@ export default function Navbar() {
             href={link.href}
             onClick={() => setMenuOpen(false)}
             style={{
-              color: "var(--text-secondary)",
+              color: isActive(link.href) ? "var(--accent)" : "var(--text-secondary)",
               textDecoration: "none",
               fontSize: 16,
-              fontWeight: 500,
+              fontWeight: isActive(link.href) ? 600 : 500,
               padding: "8px 0",
               opacity: menuOpen ? 1 : 0,
               transition: "opacity 0.2s ease",

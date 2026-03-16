@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import Navbar from "@/components/public/navbar";
 import Footer from "@/components/public/footer";
+import BackToTop from "@/components/public/back-to-top";
 
 export const revalidate = 300;
 
@@ -33,6 +34,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <Navbar />
       <main style={{ minHeight: "calc(100vh - 64px)" }}>{children}</main>
       <Footer socialLinks={socialLinks} socialToggles={socialToggles} />
+      <BackToTop />
     </div>
   );
 }

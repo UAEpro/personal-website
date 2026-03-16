@@ -3,6 +3,7 @@ import { PostStatus } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import BlogSearch from "@/components/public/blog-search";
 
 export const revalidate = 60;
 
@@ -55,6 +56,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     where.OR = [
       { title: { contains: searchFilter } },
       { excerpt: { contains: searchFilter } },
+      { content: { contains: searchFilter } },
+      { tags: { some: { tag: { name: { contains: searchFilter } } } } },
+      { category: { name: { contains: searchFilter } } },
     ];
   }
 
@@ -141,6 +145,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       >
         {"// "}المدونة
       </h1>
+
+      {/* Search */}
+      <BlogSearch />
 
       {/* Category Filter Chips */}
       {categories.length > 0 && (
@@ -271,7 +278,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                         display: "inline-block",
                         fontSize: 12,
                         color: "var(--accent)",
-                        background: "rgba(249, 115, 22, 0.1)",
+                        background: "color-mix(in srgb, var(--accent) 15%, transparent)",
                         padding: "3px 10px",
                         borderRadius: 4,
                         fontWeight: 600,
