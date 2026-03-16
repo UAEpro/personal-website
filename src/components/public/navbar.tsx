@@ -155,22 +155,6 @@ export default function Navbar() {
         ))}
       </div>
 
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          .nav-desktop {
-            display: none !important;
-          }
-          .nav-hamburger {
-            display: block !important;
-          }
-        }
-        @media (min-width: 769px) {
-          .nav-mobile-menu {
-            display: none !important;
-            max-height: 0 !important;
-          }
-        }
-      `}</style>
     </nav>
   );
 }

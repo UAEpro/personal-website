@@ -104,6 +104,31 @@ img, video, iframe, pre, table {
   color: var(--text-primary) !important;
 }
 
+/* ─── Animations ─── */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.blink-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+/* ─── Navbar Responsive ─── */
+@media (max-width: 768px) {
+  .nav-desktop {
+    display: none !important;
+  }
+  .nav-hamburger {
+    display: block !important;
+  }
+}
+@media (min-width: 769px) {
+  .nav-mobile-menu {
+    display: none !important;
+    max-height: 0 !important;
+  }
+}
+
 /* ─── Mobile Responsive Utilities ─── */
 
 /* Hero section mobile */

@@ -19,9 +19,9 @@ export default function Hero({ tagline }: HeroProps) {
         position: "relative",
       }}
     >
-      <div style={{ maxWidth: 700, width: "100%", textAlign: "center" }}>
+      <div style={{ maxWidth: "min(700px, 100%)", width: "100%", textAlign: "center", padding: "0 16px", boxSizing: "border-box" }}>
         {/* Terminal Window */}
-        <div className="terminal-window" style={{ marginBottom: 40, textAlign: "left" }}>
+        <div className="terminal-window" style={{ marginBottom: 40, textAlign: "left", direction: "ltr" }}>
           <div className="terminal-header">
             <span className="terminal-dot" style={{ background: "#ef4444" }} />
             <span className="terminal-dot" style={{ background: "#eab308" }} />
@@ -92,15 +92,6 @@ export default function Hero({ tagline }: HeroProps) {
         </Link>
       </div>
 
-      <style jsx global>{`
-        @keyframes blink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
-        }
-        .blink-cursor {
-          animation: blink 1s step-end infinite;
-        }
-      `}</style>
     </section>
   );
 }
