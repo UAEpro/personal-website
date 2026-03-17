@@ -659,18 +659,27 @@ function StoryViewer({
     }
   }, [goNext, goPrev]);
 
-  // Touch swipe
+  // Touch swipe down to close with visual drag
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    setDragging(true);
   }, []);
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!touchStartRef.current) return;
-    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
-    // Swipe up to close
-    if (dy < -100) { onClose(); touchStartRef.current = null; return; }
+    const dy = e.touches[0].clientY - touchStartRef.current.y;
+    if (dy > 0) setDragY(dy);
+  }, []);
+  const handleTouchEnd = useCallback(() => {
+    if (dragY > 120) {
+      onClose();
+    }
+    setDragY(0);
+    setDragging(false);
     touchStartRef.current = null;
-  }, [onClose]);
+  }, [dragY, onClose]);
 
   if (!snap) return null;
 
@@ -682,7 +691,7 @@ function StoryViewer({
         position: "fixed",
         inset: 0,
         zIndex: 99999,
-        background: "rgba(0,0,0,0.85)",
+        background: `rgba(0,0,0,${Math.max(0.85 - dragY / 500, 0.2)})`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -691,23 +700,26 @@ function StoryViewer({
         WebkitBackdropFilter: "blur(20px)",
       }}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Phone-like story frame */}
+      {/* Story frame */}
       <div
         className="story-viewer-frame"
         onClick={(e) => e.stopPropagation()}
         style={{
           position: "relative",
-          width: "100%",
-          maxWidth: 420,
-          height: "100%",
-          maxHeight: "92vh",
+          width: "auto",
+          height: "90vh",
           aspectRatio: "9 / 16",
-          borderRadius: 20,
+          maxWidth: "100vw",
+          borderRadius: 16,
           overflow: "hidden",
           background: "#000",
           boxShadow: "0 20px 60px rgba(0, 0, 0, 0.5)",
+          transform: `translateY(${dragY}px) scale(${Math.max(1 - dragY / 1000, 0.9)})`,
+          transition: dragging ? "none" : "transform 0.3s ease",
+          opacity: Math.max(1 - dragY / 400, 0.5),
         }}
       >
         {/* Blurred background fill */}

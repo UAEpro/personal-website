@@ -513,14 +513,9 @@ img, video, iframe, pre, table {
 
 /* Story viewer full-screen on mobile */
 @media (max-width: 768px) {
-  .story-viewer-overlay {
-    background: #000 !important;
-    backdrop-filter: none !important;
-  }
   .story-viewer-frame {
-    max-width: 100% !important;
-    max-height: 100% !important;
     height: 100% !important;
+    max-width: 100% !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     aspect-ratio: auto !important;
