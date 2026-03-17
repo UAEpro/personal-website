@@ -514,32 +514,20 @@ img, video, iframe, pre, table {
 /* Story viewer full-screen on mobile */
 @media (max-width: 768px) {
   .story-viewer-overlay {
-    padding: 0 !important;
+    background: #000 !important;
+    backdrop-filter: none !important;
   }
-  .story-viewer-content {
-    width: 100% !important;
-    height: 100vh !important;
-    border-radius: 0 !important;
-  }
-  .story-viewer-content video,
-  .story-viewer-content img {
+  .story-viewer-frame {
     max-width: 100% !important;
-    max-height: 100vh !important;
-    width: 100% !important;
+    max-height: 100% !important;
     height: 100% !important;
     border-radius: 0 !important;
-    object-fit: contain !important;
-  }
-  .story-viewer-nav {
-    width: 44px !important;
-    height: 44px !important;
+    box-shadow: none !important;
+    aspect-ratio: auto !important;
   }
   .story-viewer-close {
-    top: 12px !important;
-    right: 12px !important;
     width: 44px !important;
     height: 44px !important;
-    font-size: 24px !important;
   }
 }
 

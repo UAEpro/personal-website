@@ -677,187 +677,223 @@ function StoryViewer({
   return (
     <div
       className="story-viewer-overlay"
+      onClick={onClose}
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 99999,
-        background: "#000",
+        background: "rgba(0,0,0,0.85)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         touchAction: "none",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
       }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Progress bars at top */}
-      <div style={{
-        position: "absolute",
-        top: 8,
-        left: 8,
-        right: 8,
-        display: "flex",
-        gap: 3,
-        zIndex: 10,
-      }}>
-        {snaps.map((_, i) => (
-          <div key={i} style={{
-            flex: 1,
-            height: 3,
-            borderRadius: 2,
-            background: "rgba(255,255,255,0.3)",
-            overflow: "hidden",
-          }}>
-            <div style={{
-              height: "100%",
-              borderRadius: 2,
-              background: "white",
-              width: i < currentIndex ? "100%" : i === currentIndex ? `${progress * 100}%` : "0%",
-              transition: i === currentIndex ? "none" : "width 0.2s",
-            }} />
-          </div>
-        ))}
-      </div>
-
-      {/* Header: group title + counter + close */}
-      <div style={{
-        position: "absolute",
-        top: 18,
-        left: 12,
-        right: 12,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        zIndex: 10,
-      }}>
-        <div style={{
-          color: "white",
-          fontSize: 14,
-          fontWeight: 600,
-          fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
-          textShadow: "0 1px 4px rgba(0,0,0,0.6)",
-          maxWidth: "60%",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}>
-          {groupTitle || ""}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{
-            color: "rgba(255,255,255,0.8)",
-            fontSize: 13,
-            fontFamily: "'IBM Plex Mono', monospace",
-          }}>
-            {currentIndex + 1}/{snaps.length}
-          </span>
-          <button
-            className="story-viewer-close"
-            onClick={onClose}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              border: "none",
-              background: "rgba(255,255,255,0.15)",
-              color: "white",
-              fontSize: 20,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            x
-          </button>
-        </div>
-      </div>
-
-      {/* Tap zones + content */}
+      {/* Phone-like story frame */}
       <div
-        className="story-viewer-content"
-        onClick={handleContentClick}
+        className="story-viewer-frame"
+        onClick={(e) => e.stopPropagation()}
         style={{
+          position: "relative",
           width: "100%",
+          maxWidth: 420,
           height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          userSelect: "none",
+          maxHeight: "92vh",
+          aspectRatio: "9 / 16",
+          borderRadius: 20,
+          overflow: "hidden",
+          background: "#000",
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.5)",
         }}
       >
-        {isVideo ? (
-          <video
-            ref={videoRef}
-            key={snap.contentUrl}
-            src={snap.contentUrl}
-            autoPlay
-            playsInline
-            onTimeUpdate={handleVideoTimeUpdate}
-            onEnded={handleVideoEnded}
-            style={{
-              maxWidth: "100%",
-              maxHeight: "100%",
-              objectFit: "contain",
-            }}
-          />
-        ) : (
-          <img
-            key={snap.contentUrl}
-            src={snap.contentUrl || snap.thumbnail}
-            alt="Story"
-            style={{
-              maxWidth: "100%",
-              maxHeight: "100%",
-              objectFit: "contain",
-            }}
-          />
-        )}
-      </div>
+        {/* Blurred background fill */}
+        <div style={{
+          position: "absolute",
+          inset: -20,
+          backgroundImage: `url(${snap.thumbnail || snap.contentUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "blur(30px) brightness(0.4)",
+          zIndex: 0,
+        }} />
 
-      {/* Link attachment */}
-      {snap.link && (
-        <a
-          href={snap.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            position: "absolute",
-            bottom: 32,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 20,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "10px 24px",
-            background: "rgba(255, 255, 255, 0.95)",
-            color: "#000",
-            borderRadius: 24,
+        {/* Progress bars */}
+        <div style={{
+          position: "absolute",
+          top: 8,
+          left: 8,
+          right: 8,
+          display: "flex",
+          gap: 3,
+          zIndex: 10,
+        }}>
+          {snaps.map((_, i) => (
+            <div key={i} style={{
+              flex: 1,
+              height: 3,
+              borderRadius: 2,
+              background: "rgba(255,255,255,0.3)",
+              overflow: "hidden",
+            }}>
+              <div style={{
+                height: "100%",
+                borderRadius: 2,
+                background: "white",
+                width: i < currentIndex ? "100%" : i === currentIndex ? `${progress * 100}%` : "0%",
+                transition: i === currentIndex ? "none" : "width 0.2s",
+              }} />
+            </div>
+          ))}
+        </div>
+
+        {/* Header */}
+        <div style={{
+          position: "absolute",
+          top: 18,
+          left: 12,
+          right: 12,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          zIndex: 10,
+        }}>
+          <div style={{
+            color: "white",
             fontSize: 14,
             fontWeight: 600,
-            textDecoration: "none",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
             fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+            textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+            maxWidth: "60%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
             whiteSpace: "nowrap",
+          }}>
+            {groupTitle || ""}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{
+              color: "rgba(255,255,255,0.8)",
+              fontSize: 13,
+              fontFamily: "'IBM Plex Mono', monospace",
+            }}>
+              {currentIndex + 1}/{snaps.length}
+            </span>
+            <button
+              className="story-viewer-close"
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: "none",
+                background: "rgba(0,0,0,0.4)",
+                color: "white",
+                fontSize: 22,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Content (tap to navigate) */}
+        <div
+          className="story-viewer-content"
+          onClick={handleContentClick}
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            userSelect: "none",
+            zIndex: 1,
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-            <polyline points="15 3 21 3 21 9" />
-            <line x1="10" y1="14" x2="21" y2="3" />
-          </svg>
-          {(() => {
-            try {
-              return new URL(snap.link!).hostname.replace("www.", "");
-            } catch {
-              return "فتح الرابط";
-            }
-          })()}
-        </a>
-      )}
+          {isVideo ? (
+            <video
+              ref={videoRef}
+              key={snap.contentUrl}
+              src={snap.contentUrl}
+              autoPlay
+              playsInline
+              onTimeUpdate={handleVideoTimeUpdate}
+              onEnded={handleVideoEnded}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          ) : (
+            <img
+              key={snap.contentUrl}
+              src={snap.contentUrl || snap.thumbnail}
+              alt="Story"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          )}
+        </div>
+
+        {/* Link attachment */}
+        {snap.link && (
+          <a
+            href={snap.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              bottom: 24,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 20,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 24px",
+              background: "rgba(255, 255, 255, 0.95)",
+              color: "#000",
+              borderRadius: 24,
+              fontSize: 14,
+              fontWeight: 600,
+              textDecoration: "none",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+              fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+            {(() => {
+              try {
+                return new URL(snap.link!).hostname.replace("www.", "");
+              } catch {
+                return "فتح الرابط";
+              }
+            })()}
+          </a>
+        )}
+      </div>
     </div>
   );
 }
