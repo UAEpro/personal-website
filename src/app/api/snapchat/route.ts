@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
         Accept: "text/html,application/xhtml+xml",
         "Accept-Language": "en-US,en;q=0.9",
       },
-      next: { revalidate: 3600 },
+      cache: "no-store",
     });
 
     const html = await res.text();
