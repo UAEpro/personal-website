@@ -513,12 +513,15 @@ img, video, iframe, pre, table {
 
 /* Story viewer full-screen on mobile */
 @media (max-width: 768px) {
+  .story-viewer-overlay {
+    background: #000 !important;
+  }
   .story-viewer-frame {
-    height: 100% !important;
-    max-width: 100% !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    aspect-ratio: auto !important;
   }
   .story-viewer-close {
     width: 44px !important;

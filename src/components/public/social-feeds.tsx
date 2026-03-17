@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 interface SocialFeedsProps {
   toggles: {
@@ -649,7 +650,9 @@ function StoryViewer({
   }, []);
 
   // Tap handler: left half = next, right half = prev (RTL)
+  // Ignore clicks that were part of a drag
   const handleContentClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (dragYRef.current > 5) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     if (x < rect.width / 2) {
@@ -659,27 +662,68 @@ function StoryViewer({
     }
   }, [goNext, goPrev]);
 
-  // Touch swipe down to close with visual drag
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const [dragY, setDragY] = useState(0);
-  const [dragging, setDragging] = useState(false);
+  // Swipe/drag down to close (touch + mouse)
+  const dragStartRef = useRef<{ y: number } | null>(null);
+  const dragYRef = useRef(0);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+
+  const applyDrag = useCallback((dy: number) => {
+    if (!frameRef.current) return;
+    dragYRef.current = dy;
+    frameRef.current.style.transform = `translateY(${dy}px) scale(${Math.max(1 - dy / 1000, 0.92)})`;
+    frameRef.current.style.transition = "none";
+  }, []);
+
+  const releaseDrag = useCallback(() => {
+    if (!frameRef.current) return;
+    if (dragYRef.current > 100) {
+      onClose();
+    } else {
+      frameRef.current.style.transform = "";
+      frameRef.current.style.transition = "transform 0.3s ease";
+    }
+    dragYRef.current = 0;
+    dragStartRef.current = null;
+    isDraggingRef.current = false;
+  }, [onClose]);
+
+  // Touch handlers
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    setDragging(true);
+    dragStartRef.current = { y: e.touches[0].clientY };
   }, []);
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!touchStartRef.current) return;
-    const dy = e.touches[0].clientY - touchStartRef.current.y;
-    if (dy > 0) setDragY(dy);
-  }, []);
+    if (!dragStartRef.current) return;
+    const dy = Math.max(0, e.touches[0].clientY - dragStartRef.current.y);
+    applyDrag(dy);
+  }, [applyDrag]);
   const handleTouchEnd = useCallback(() => {
-    if (dragY > 120) {
-      onClose();
-    }
-    setDragY(0);
-    setDragging(false);
-    touchStartRef.current = null;
-  }, [dragY, onClose]);
+    releaseDrag();
+  }, [releaseDrag]);
+
+  // Mouse handlers (desktop drag down)
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    dragStartRef.current = { y: e.clientY };
+    isDraggingRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current || !dragStartRef.current) return;
+      const dy = Math.max(0, e.clientY - dragStartRef.current.y);
+      applyDrag(dy);
+    };
+    const handleMouseUp = () => {
+      if (!isDraggingRef.current) return;
+      releaseDrag();
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [applyDrag, releaseDrag]);
 
   if (!snap) return null;
 
@@ -691,13 +735,11 @@ function StoryViewer({
         position: "fixed",
         inset: 0,
         zIndex: 99999,
-        background: `rgba(0,0,0,${Math.max(0.85 - dragY / 500, 0.2)})`,
+        background: "rgba(0,0,0,0.9)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         touchAction: "none",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -705,21 +747,17 @@ function StoryViewer({
     >
       {/* Story frame */}
       <div
+        ref={frameRef}
         className="story-viewer-frame"
         onClick={(e) => e.stopPropagation()}
         style={{
           position: "relative",
-          width: "auto",
+          width: "min(420px, 100vw)",
           height: "90vh",
-          aspectRatio: "9 / 16",
-          maxWidth: "100vw",
           borderRadius: 16,
           overflow: "hidden",
           background: "#000",
           boxShadow: "0 20px 60px rgba(0, 0, 0, 0.5)",
-          transform: `translateY(${dragY}px) scale(${Math.max(1 - dragY / 1000, 0.9)})`,
-          transition: dragging ? "none" : "transform 0.3s ease",
-          opacity: Math.max(1 - dragY / 400, 0.5),
         }}
       >
         {/* Blurred background fill */}
@@ -819,17 +857,18 @@ function StoryViewer({
           </div>
         </div>
 
-        {/* Content (tap to navigate) */}
+        {/* Content (tap to navigate, drag down to close) */}
         <div
           className="story-viewer-content"
           onClick={handleContentClick}
+          onMouseDown={handleMouseDown}
           style={{
             position: "absolute",
             inset: 0,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            cursor: "pointer",
+            cursor: "grab",
             userSelect: "none",
             zIndex: 1,
           }}
@@ -1485,14 +1524,15 @@ function SnapchatStories({ url }: { url: string }) {
         </div>
       )}
 
-      {/* Story Viewer Modal */}
-      {viewerSnaps && viewerSnaps.length > 0 && (
+      {/* Story Viewer Modal (portal to body to avoid transform/stacking issues) */}
+      {viewerSnaps && viewerSnaps.length > 0 && createPortal(
         <StoryViewer
           snaps={viewerSnaps}
           initialIndex={viewerIndex}
           groupTitle={viewerTitle}
           onClose={() => { setViewerSnaps(null); setViewerTitle(undefined); }}
-        />
+        />,
+        document.body
       )}
 
       {/* CSS for pulse animation */}
