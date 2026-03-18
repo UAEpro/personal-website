@@ -752,8 +752,9 @@ function StoryViewer({
         onClick={(e) => e.stopPropagation()}
         style={{
           position: "relative",
-          width: "min(420px, 100vw)",
           height: "90vh",
+          aspectRatio: "9 / 16",
+          maxWidth: "90vw",
           borderRadius: 16,
           overflow: "hidden",
           background: "#000",
